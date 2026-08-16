@@ -169,6 +169,44 @@
             background: var(--accent-dark);
         }
 
+        .privacy-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            color: #8FE3B0;
+            border: 1px solid #2E5A40;
+            background: #17281E;
+            padding: 6px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        /* ---------- Shared device banner ---------- */
+        .shared-device-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #FBF0DD;
+            color: #7A4E14;
+            font-size: 0.8rem;
+            padding: 9px 22px;
+            border-bottom: 1px solid #E9D5AE;
+            flex-shrink: 0;
+        }
+
+        .shared-device-banner i.fa-triangle-exclamation {
+            color: #B8763B;
+        }
+
+        .shared-device-banner span {
+            flex: 1;
+        }
+
+        .shared-device-banner.hidden {
+            display: none;
+        }
+
         /* ---------- Workspace ---------- */
         .workspace {
             display: flex;
@@ -480,6 +518,18 @@
             flex-direction: column;
             color: #222;
             height: auto;
+            position: relative;
+        }
+
+        /* Business-class top accent strip */
+        .resume-sheet::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--tpl-accent, #B8763B);
         }
 
         /* Base CV element styling — modified per template class below */
@@ -535,8 +585,7 @@
         }
 
         .cv-section {
-            margin-bottom: 22px;
-            /* page-break-inside: avoid; */
+            margin-bottom: 26px;
         }
 
         .cv-section-title {
@@ -582,7 +631,7 @@
         }
 
         .cv-item {
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             page-break-inside: avoid;
             break-inside: avoid;
         }
@@ -635,6 +684,40 @@
             color: var(--tpl-accent, #B8763B);
             margin-top: 2px;
             font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* ---- Certification image thumbnails ---- */
+        .cv-cert-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .cv-cert-thumb {
+            width: 130px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(27, 36, 48, 0.08);
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .cv-cert-thumb img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .cv-cert-thumb .cv-cert-caption {
+            font-size: 0.68rem;
+            color: #6b7280;
+            text-align: center;
+            padding: 4px 6px;
+            font-family: 'IBM Plex Mono', monospace;
+            border-top: 1px solid var(--line);
         }
 
         /* ---- Template: Ledger (default — editorial, brass rule, serif-forward) ---- */
@@ -730,6 +813,10 @@
 
         .tpl-folio .cv-section-title::after {
             display: none;
+        }
+
+        .tpl-folio .cv-cert-grid {
+            justify-content: center;
         }
 
         /* Responsive */
@@ -900,6 +987,7 @@
 
                 <div id="certs" class="form-section">
                     <h2>Certifications</h2>
+                    <p class="section-hint">Add an image of the certificate if you'd like it shown on your resume.</p>
                     <div id="cert-form-list"></div>
                     <div id="cert-empty" class="empty-note">No certifications added yet.</div>
                     <button class="btn btn-add-block" onclick="addCert()"><i class="fas fa-plus"></i> Add
@@ -1014,7 +1102,11 @@
         }
 
         function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(collectData()));
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(collectData()));
+            } catch (e) {
+                console.error('Could not save — storage may be full (large cert images?)', e);
+            }
         }
 
         /* ---------- Tabs & templates ---------- */
@@ -1115,6 +1207,7 @@
         <div class="cv-date">${escapeHtml(item.year || '')}</div>
       </div>
       <div class="cv-company">${escapeHtml(item.issuer) || ''}</div>
+      ${item.image ? `<div class="cv-cert-grid"><div class="cv-cert-thumb"><img src="${item.image}" alt="${escapeHtml(item.name) || 'Certificate'}"><div class="cv-cert-caption">${escapeHtml(item.name) || 'Certificate'}</div></div></div>` : ''}
     </div>
   `);
             document.getElementById('section-cert').style.display = cvData.certs.length ? 'block' : 'none';
@@ -1215,6 +1308,13 @@
       <div class="input-group"><label>Issuer</label><input value="${attr(item.issuer)}" oninput="updateItem('certs', ${index}, 'issuer', this.value)"></div>
       <div class="input-group"><label>Year</label><input value="${attr(item.year)}" oninput="updateItem('certs', ${index}, 'year', this.value)"></div>
     </div>
+    <div class="input-group"><label>Certificate Image (optional)</label>
+      <input type="file" accept="image/*" onchange="handleCertImage(event, ${index})">
+      ${item.image ? `<div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+            <img src="${item.image}" style="width:64px;height:46px;object-fit:cover;border-radius:4px;border:1px solid var(--line);">
+            <button type="button" class="btn-icon danger" onclick="removeCertImage(${index})"><i class="fas fa-trash"></i> Remove image</button>
+          </div>` : ''}
+    </div>
   `);
         }
 
@@ -1247,6 +1347,37 @@
             renderForms(); updateCV();
         }
 
+        /* ---------- Certification image upload ---------- */
+        function handleCertImage(event, index) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    // Resize down so localStorage doesn't bloat and PDF export stays fast/clean
+                    const maxW = 500;
+                    const scale = Math.min(1, maxW / img.width);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    cvData.certs[index].image = canvas.toDataURL('image/jpeg', 0.82);
+                    renderForms();
+                    updateCV();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function removeCertImage(index) {
+            delete cvData.certs[index].image;
+            renderForms();
+            updateCV();
+        }
+
         /* ---------- PDF export ---------- */
         function generatePDF() {
             const element = document.getElementById('resume-sheet');
@@ -1261,11 +1392,11 @@
 
             const opt = {
                 margin: 0,
-    filename: `${name}_Resume.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    pagebreak: { mode: ['css', 'legacy'] },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                filename: `${name}_Resume.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                pagebreak: { mode: ['css', 'legacy'] },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save().then(() => {
                 btn.innerHTML = oldText;
@@ -1301,6 +1432,11 @@
             };
             reader.readAsText(file);
             event.target.value = '';
+        }
+
+        /* ---------- Shared device banner ---------- */
+        function dismissBanner() {
+            document.getElementById('shared-device-banner').classList.add('hidden');
         }
 
         /* ---------- Demo & reset ---------- */
