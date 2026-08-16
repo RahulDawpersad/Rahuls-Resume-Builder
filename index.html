@@ -276,6 +276,7 @@
         <option value="modern">Modern Sidebar</option>
       </select>
       <button class="btn btn-ghost" id="sampleBtn">Load sample</button>
+      <button class="btn btn-ghost" id="clearBtn">Start over</button>
       <button class="btn btn-primary" id="downloadBtn">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v13m0 0l-5-5m5 5l5-5M4 21h16"/></svg>
         Download PDF
@@ -408,6 +409,68 @@
 
   let idCounter = 1;
   const uid = () => "id" + (idCounter++);
+
+  const STORAGE_KEY = "draftline_resume_v1";
+
+  function saveState(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(e){ /* storage unavailable — fail silently, editing still works */ }
+  }
+
+  function bumpIdCounterPast(items){
+    items.forEach(item=>{
+      const n = parseInt(String(item.id||"").replace("id",""), 10);
+      if(!isNaN(n) && n >= idCounter) idCounter = n + 1;
+    });
+  }
+
+  function loadState(){
+    let saved;
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return false;
+      saved = JSON.parse(raw);
+    }catch(e){ return false; }
+    if(!saved) return false;
+
+    Object.assign(state.personal, saved.personal || {});
+    state.summary = saved.summary || "";
+    state.experience = saved.experience || [];
+    state.projects = saved.projects || [];
+    state.education = saved.education || [];
+    state.skills = saved.skills || [];
+    state.languages = saved.languages || [];
+    state.template = saved.template || "classic";
+    state.accent = saved.accent || "#1f3a5f";
+
+    bumpIdCounterPast(state.experience);
+    bumpIdCounterPast(state.projects);
+    bumpIdCounterPast(state.education);
+    bumpIdCounterPast(state.languages);
+
+    // Reflect restored values back into the form controls
+    document.getElementById("p_name").value = state.personal.name || "";
+    document.getElementById("p_title").value = state.personal.title || "";
+    document.getElementById("p_email").value = state.personal.email || "";
+    document.getElementById("p_phone").value = state.personal.phone || "";
+    document.getElementById("p_location").value = state.personal.location || "";
+    document.getElementById("p_website").value = state.personal.website || "";
+    document.getElementById("p_summary").value = state.summary;
+    document.getElementById("templateSelect").value = state.template;
+
+    document.querySelectorAll(".swatch").forEach(sw=>{
+      sw.classList.toggle("active", sw.dataset.color.toLowerCase() === state.accent.toLowerCase());
+    });
+
+    renderExperienceForm();
+    renderProjectForm();
+    renderEducationForm();
+    renderLanguageForm();
+    renderSkillTags();
+
+    return true;
+  }
 
   // ---------- Tab switching ----------
   document.getElementById("sectionTabs").addEventListener("click", (e)=>{
@@ -687,6 +750,7 @@
     else paper.innerHTML = renderModern();
 
     updateCompleteness();
+    saveState();
   }
 
   function hexToSoft(hex){
@@ -839,13 +903,20 @@
   document.getElementById("downloadBtn").addEventListener("click", ()=>{
     const paper = document.getElementById("resumePaper");
     const filename = (state.personal.name ? state.personal.name.replace(/\s+/g,"_") : "resume") + "_resume.pdf";
+
+    // Size the PDF page to the resume's actual rendered height instead of a
+    // fixed A4 height — this is what was causing a near-empty second page
+    // whenever content ran even slightly past 1123px.
+    const contentHeight = Math.ceil(paper.scrollHeight);
+    const contentWidth = paper.scrollWidth;
+
     const opt = {
       margin: 0,
       filename: filename,
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2.5, useCORS: true, backgroundColor: "#ffffff" },
-      jsPDF: { unit: "px", format: [794, 1123], orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] }
+      html2canvas: { scale: 2.5, useCORS: true, backgroundColor: "#ffffff", windowWidth: contentWidth, windowHeight: contentHeight },
+      jsPDF: { unit: "px", format: [contentWidth, contentHeight], orientation: "portrait" },
+      pagebreak: { mode: ["css"] }
     };
     const btn = document.getElementById("downloadBtn");
     const original = btn.innerHTML;
@@ -901,7 +972,32 @@
     render();
   });
 
+  document.getElementById("clearBtn").addEventListener("click", ()=>{
+    if(!confirm("Clear everything and start a blank resume? This can't be undone.")) return;
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+
+    state.personal = {name:"",title:"",email:"",phone:"",location:"",website:""};
+    state.summary = "";
+    state.experience = [];
+    state.projects = [];
+    state.education = [];
+    state.skills = [];
+    state.languages = [];
+
+    ["p_name","p_title","p_email","p_phone","p_location","p_website","p_summary"].forEach(id=>{
+      document.getElementById(id).value = "";
+    });
+
+    renderExperienceForm();
+    renderProjectForm();
+    renderEducationForm();
+    renderLanguageForm();
+    renderSkillTags();
+    render();
+  });
+
   // ---------- Init ----------
+  loadState();
   render();
 })();
 </script>
