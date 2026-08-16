@@ -17,17 +17,23 @@
     <style>
         :root {
             --ink: #1B2430;
-            --paper: #FAF8F4;
-            --panel: #FFFFFF;
+            --paper: #EDE6D3;
+            --panel: #FFFDF7;
             --slate: #616B7A;
             --slate-soft: #88909B;
-            --line: #E5E1D8;
-            --accent: #B8763B;
-            --accent-dark: #8F5A28;
-            --accent-tint: #F4E6D6;
-            --success: #3F7A5C;
-            --danger: #B5473A;
-            --shadow: 0 20px 40px -12px rgba(27, 36, 48, 0.18);
+            --line: #E1D9C4;
+            --accent: #A6672E;
+            --accent-dark: #7E4E22;
+            --accent-tint: #EFDFC2;
+            --ledger-green: #2F5540;
+            --ledger-green-tint: #E1EBE3;
+            --success: #2F5540;
+            --danger: #A6392E;
+            --shadow: 0 20px 40px -12px rgba(27, 36, 48, 0.22);
+            --rule: repeating-linear-gradient(to bottom,
+                    transparent 0,
+                    transparent 30px,
+                    rgba(166, 103, 46, 0.09) 31px);
         }
 
         * {
@@ -66,6 +72,7 @@
             padding: 0 28px;
             flex-shrink: 0;
             z-index: 30;
+            border-bottom: 3px solid var(--accent);
         }
 
         .brand {
@@ -111,28 +118,56 @@
         .completion-pill {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: #C7CCD4;
-            padding: 6px 12px;
+            padding: 5px 14px 5px 5px;
             border: 1px solid #333F4E;
             border-radius: 20px;
         }
 
-        .completion-track {
-            width: 60px;
-            height: 5px;
-            background: #333F4E;
-            border-radius: 3px;
-            overflow: hidden;
+        .completion-seal {
+            --pct: 0%;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: conic-gradient(var(--accent) var(--pct), #333F4E 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: background .35s ease;
         }
 
-        .completion-fill {
-            height: 100%;
-            background: var(--accent);
-            width: 0%;
-            transition: width .35s ease;
+        .completion-seal::before {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: var(--ink);
+        }
+
+        .completion-seal span {
+            position: relative;
+            z-index: 1;
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .completion-copy {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.25;
+        }
+
+        .completion-copy .cc-label {
+            font-size: 0.62rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #7C879A;
         }
 
         .btn {
@@ -169,6 +204,57 @@
             background: var(--accent-dark);
         }
 
+        .privacy-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--ledger-green);
+            background: var(--ledger-green-tint);
+            border: 1px solid #C3D6C9;
+            padding: 6px 11px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: default;
+        }
+
+        .privacy-badge i {
+            font-size: 0.72rem;
+        }
+
+        .shared-device-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #FBF2E4;
+            color: var(--accent-dark);
+            border-bottom: 1px solid #E7D2A9;
+            padding: 9px 28px;
+            font-size: 0.82rem;
+            flex-shrink: 0;
+        }
+
+        .shared-device-banner.hidden {
+            display: none;
+        }
+
+        .shared-device-banner i.fa-triangle-exclamation {
+            color: var(--accent);
+        }
+
+        .shared-device-banner span {
+            flex: 1;
+        }
+
+        .shared-device-banner .btn-icon {
+            color: var(--accent-dark);
+        }
+
+        .shared-device-banner .btn-icon:hover {
+            background: #F0DFB8;
+        }
+
         /* ---------- Workspace ---------- */
         .workspace {
             display: flex;
@@ -179,7 +265,8 @@
         .editor-panel {
             width: 460px;
             background: var(--panel);
-            border-right: 1px solid var(--line);
+            background-image: var(--rule);
+            border-right: 1px dashed #D8CCA8;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -261,12 +348,13 @@
             color: var(--slate);
         }
 
-        /* Nav tabs */
+        /* Nav tabs — styled like the raised index tabs on a physical ledger book */
         .editor-nav {
             display: flex;
             flex-wrap: wrap;
-            padding: 0 14px;
-            border-bottom: 1px solid var(--line);
+            gap: 3px;
+            padding: 10px 14px 0;
+            border-bottom: 2px solid var(--accent);
             position: sticky;
             top: 0;
             background: var(--panel);
@@ -274,23 +362,34 @@
         }
 
         .nav-item {
-            padding: 14px 12px;
-            font-size: 0.82rem;
-            font-weight: 500;
+            padding: 9px 14px 10px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
             color: var(--slate-soft);
             cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: color .15s;
             white-space: nowrap;
+            background: #EDE6D3;
+            border: 1px solid var(--line);
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            transform: translateY(3px);
+            transition: transform .15s ease, color .15s ease, background .15s ease;
         }
 
         .nav-item:hover {
-            color: var(--accent);
+            color: var(--accent-dark);
+            transform: translateY(1px);
         }
 
         .nav-item.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
+            color: var(--accent-dark);
+            background: var(--panel);
+            border-color: var(--accent);
+            transform: translateY(0);
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 -3px 6px -2px rgba(27, 36, 48, 0.1);
         }
 
         .editor-forms {
@@ -732,6 +831,30 @@
             display: none;
         }
 
+        /* Export mode: used only while generating the PDF. The editor keeps the
+           full A4 min-height so the page always *looks* like a sheet of paper,
+           but for the actual export we drop that forced height and trailing
+           margin so a short resume doesn't get padded with a blank page. */
+        .resume-sheet.pdf-export-mode {
+            min-height: 0;
+        }
+
+        .resume-sheet.pdf-export-mode .cv-section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Keep headings glued to the content that follows them across a page break */
+        .cv-header,
+        .cv-section-title {
+            break-after: avoid;
+            page-break-after: avoid;
+        }
+
+        .skill-tags {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
         /* Responsive */
         @media (max-width:1100px) {
             .workspace {
@@ -766,11 +889,13 @@
             Ledger <span class="tag">Resume Studio</span>
         </div>
         <div class="toolbar">
-            <div class="completion-pill">
-                <i class="fas fa-signature" style="color:var(--accent)"></i>
-                <span id="completion-label">0% complete</span>
-                <div class="completion-track">
-                    <div class="completion-fill" id="completion-fill"></div>
+            <div class="completion-pill" title="Share of key fields you've filled in">
+                <div class="completion-seal" id="completion-seal">
+                    <span id="completion-label">0%</span>
+                </div>
+                <div class="completion-copy">
+                    <span class="cc-label">Ledger status</span>
+                    <span id="completion-status">Just opened</span>
                 </div>
             </div>
             <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()"><i
@@ -974,6 +1099,9 @@
                     loadIntoForm(d);
                 } catch (e) { console.error('Could not load saved resume', e); }
             }
+            if (localStorage.getItem('ledger_banner_dismissed')) {
+                document.getElementById('shared-device-banner').classList.add('hidden');
+            }
             renderForms();
             updateCV();
         };
@@ -1145,8 +1273,10 @@
             if (cvData.experience.length) score++;
             if (document.getElementById('in-skills').value.trim()) score++;
             const pct = Math.round((score / total) * 100);
-            document.getElementById('completion-fill').style.width = pct + '%';
-            document.getElementById('completion-label').textContent = pct + '% complete';
+            document.getElementById('completion-seal').style.setProperty('--pct', pct + '%');
+            document.getElementById('completion-label').textContent = pct + '%';
+            const status = pct === 0 ? 'Just opened' : pct < 100 ? 'In progress' : 'Ready to send';
+            document.getElementById('completion-status').textContent = status;
         }
 
         /* ---------- Repeater forms ---------- */
@@ -1250,26 +1380,68 @@
         /* ---------- PDF export ---------- */
         function generatePDF() {
             const element = document.getElementById('resume-sheet');
-            const oldShadow = element.style.boxShadow;
-            element.style.boxShadow = 'none';
-
             const btn = document.querySelector('.btn-primary');
+            const previewPanel = document.querySelector('.preview-panel');
+
+            const oldShadow = element.style.boxShadow;
             const oldText = btn.innerHTML;
+            const prevPanelScroll = previewPanel.scrollTop;
+            const prevWindowScroll = window.scrollY;
+
             btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Generating...';
+            btn.disabled = true;
+            element.style.boxShadow = 'none';
+            element.classList.add('pdf-export-mode');
+
+            // html2canvas reads the page's current scroll offsets when it renders.
+            // Because the sheet lives inside a scrollable preview panel, capturing
+            // while that panel (or the page) is scrolled produces a shifted image —
+            // which shows up as a band of blank space or cropped content in the PDF.
+            // Resetting scroll to the top before capture fixes that.
+            previewPanel.scrollTop = 0;
+            window.scrollTo(0, 0);
 
             const name = document.getElementById('in-name').value.trim().replace(/\s+/g, '_') || 'Resume';
 
-            const opt = {
-                margin: 0,
-    filename: `${name}_Resume.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    pagebreak: { mode: ['css', 'legacy'] },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save().then(() => {
+            const restore = () => {
                 btn.innerHTML = oldText;
+                btn.disabled = false;
                 element.style.boxShadow = oldShadow;
+                element.classList.remove('pdf-export-mode');
+                previewPanel.scrollTop = prevPanelScroll;
+                window.scrollTo(0, prevWindowScroll);
+            };
+
+            // Let the layout settle (min-height removal, scroll reset) before measuring.
+            requestAnimationFrame(() => {
+                const opt = {
+                    margin: 0,
+                    filename: `${name}_Resume.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 3,
+                        useCORS: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: element.scrollWidth,
+                        windowHeight: element.scrollHeight
+                    },
+                    // 'avoid' stops a section title or job entry from being sliced
+                    // across two pages; without it, page breaks land mid-line.
+                    pagebreak: {
+                        mode: ['css', 'legacy'],
+                        avoid: ['.cv-item', '.cv-header', '.skill-tags', '.cv-section-title']
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', hotfixes: ['px_scaling'] }
+                };
+
+                html2pdf().set(opt).from(element).save()
+                    .then(restore)
+                    .catch(err => {
+                        console.error('PDF generation failed', err);
+                        restore();
+                        alert("The PDF couldn't be generated. Please try again — if it keeps happening, try a different browser.");
+                    });
             });
         }
 
@@ -1335,8 +1507,17 @@
         function resetData() {
             if (confirm('Clear all data? This cannot be undone.')) {
                 localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(BANNER_DISMISSED_KEY);
                 location.reload();
             }
+        }
+
+        /* ---------- Shared-device banner ---------- */
+        const BANNER_DISMISSED_KEY = 'ledger_banner_dismissed';
+
+        function dismissBanner() {
+            document.getElementById('shared-device-banner').classList.add('hidden');
+            localStorage.setItem(BANNER_DISMISSED_KEY, '1');
         }
     </script>
 </body>
