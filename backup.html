@@ -217,6 +217,7 @@
   .tmpl-classic .r-item-org{font-family:'Inter',sans-serif;font-size:12.5px;color:#565f73;font-weight:600;margin-top:1px;}
   .tmpl-classic .r-item-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a8296;white-space:nowrap;}
   .tmpl-classic .r-item-desc{font-size:13px;line-height:1.6;color:#3d4456;margin:6px 0 0;white-space:pre-line;}
+  .r-item-link{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--tmpl-accent);font-style:italic;margin-top:2px;}
   .tmpl-classic .r-skills{display:flex;flex-wrap:wrap;gap:7px;}
   .tmpl-classic .r-skill-pill{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;background:var(--tmpl-accent-soft);color:var(--tmpl-accent);padding:5px 11px;border-radius:20px;}
   .tmpl-classic .r-two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
@@ -288,6 +289,7 @@
         <div class="tab active" data-target="personal">Personal</div>
         <div class="tab" data-target="summary">Summary</div>
         <div class="tab" data-target="experience">Experience</div>
+        <div class="tab" data-target="projects">Projects</div>
         <div class="tab" data-target="education">Education</div>
         <div class="tab" data-target="skills">Skills</div>
         <div class="tab" data-target="extras">Extras</div>
@@ -326,6 +328,14 @@
           <p class="section-hint">List your most recent role first.</p>
           <div id="experienceList"></div>
           <button class="add-btn" id="addExperience">+ Add position</button>
+        </section>
+
+        <!-- PROJECTS -->
+        <section class="form-section" data-section="projects">
+          <h3 class="section-title">Projects</h3>
+          <p class="section-hint">Personal builds, side projects, or things you shipped outside of work.</p>
+          <div id="projectsList"></div>
+          <button class="add-btn" id="addProject">+ Add project</button>
         </section>
 
         <!-- EDUCATION -->
@@ -390,6 +400,7 @@
     personal:{name:"",title:"",email:"",phone:"",location:"",website:""},
     summary:"",
     experience:[],
+    projects:[],
     education:[],
     skills:[],
     languages:[]
@@ -462,6 +473,46 @@
   }
 
   document.getElementById("addExperience").addEventListener("click", ()=>addExperience());
+
+  // ---------- Projects ----------
+  function addProject(data){
+    const entry = Object.assign({id:uid(), name:"", role:"", link:"", description:""}, data||{});
+    state.projects.push(entry);
+    renderProjectForm();
+    render();
+  }
+
+  function renderProjectForm(){
+    const list = document.getElementById("projectsList");
+    list.innerHTML = "";
+    state.projects.forEach((entry, idx)=>{
+      const card = document.createElement("div");
+      card.className = "entry-card";
+      card.innerHTML = `
+        <div class="entry-card-head">
+          <span>Project ${idx+1}</span>
+          <button class="icon-btn" data-remove="${entry.id}" data-list="projects" title="Remove">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="field"><label>Project name</label><input type="text" data-field="name" value="${esc(entry.name)}" placeholder="Bean & Brew Café Web App"></div>
+        <div class="field-row">
+          <div class="field"><label>Your role (optional)</label><input type="text" data-field="role" value="${esc(entry.role)}" placeholder="Builder"></div>
+          <div class="field"><label>Link (optional)</label><input type="text" data-field="link" value="${esc(entry.link)}" placeholder="github.com/you/project"></div>
+        </div>
+        <div class="field"><label>Description</label><textarea data-field="description" rows="4" placeholder="Node.js/Express + Supabase app with AI chatbot, table booking, and site-wide auth...">${esc(entry.description)}</textarea></div>
+      `;
+      card.querySelectorAll("[data-field]").forEach(input=>{
+        input.addEventListener("input", (e)=>{
+          entry[e.target.dataset.field] = e.target.value;
+          render();
+        });
+      });
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("addProject").addEventListener("click", ()=>addProject());
 
   // ---------- Education ----------
   function addEducation(data){
@@ -550,6 +601,7 @@
     const listName = btn.dataset.list;
     state[listName] = state[listName].filter(item=>item.id !== id);
     if(listName === "experience") renderExperienceForm();
+    if(listName === "projects") renderProjectForm();
     if(listName === "education") renderEducationForm();
     if(listName === "languages") renderLanguageForm();
     render();
@@ -659,6 +711,21 @@
     `).join("");
   }
 
+  function renderProjectItems(){
+    if(!state.projects.length) return `<p class="empty-msg">No projects added yet.</p>`;
+    return state.projects.map(x=>`
+      <div class="r-item">
+        <div class="r-item-head">
+          <div>
+            <div class="r-item-title">${esc(x.name)||"Project name"}${x.role ? ` <span class="r-item-org" style="font-weight:600;">— ${esc(x.role)}</span>` : ""}</div>
+          </div>
+        </div>
+        ${x.link ? `<div class="r-item-link">${esc(x.link)}</div>` : ""}
+        ${x.description ? `<div class="r-item-desc">${esc(x.description)}</div>` : ""}
+      </div>
+    `).join("");
+  }
+
   function renderEducationItems(){
     if(!state.education.length) return `<p class="empty-msg">No education added yet.</p>`;
     return state.education.map(x=>`
@@ -688,6 +755,11 @@
         <div class="r-h2">Experience</div>
         ${renderExperienceItems()}
       </div>
+
+      ${state.projects.length ? `<div class="r-section">
+        <div class="r-h2">Projects</div>
+        ${renderProjectItems()}
+      </div>` : ""}
 
       <div class="r-two-col">
         <div class="r-section">
@@ -734,6 +806,10 @@
           <div class="r-h2">Experience</div>
           ${renderExperienceItems()}
         </div>
+        ${state.projects.length ? `<div class="r-section">
+          <div class="r-h2">Projects</div>
+          ${renderProjectItems()}
+        </div>` : ""}
         <div class="r-section">
           <div class="r-h2">Education</div>
           ${renderEducationItems()}
@@ -744,11 +820,12 @@
 
   // ---------- Completeness ----------
   function updateCompleteness(){
-    let score = 0, total = 6;
+    let score = 0, total = 7;
     if(state.personal.name && state.personal.email) score++;
     if(state.personal.title) score++;
     if(state.summary) score++;
     if(state.experience.length) score++;
+    if(state.projects.length) score++;
     if(state.education.length) score++;
     if(state.skills.length) score++;
     const pct = Math.round((score/total)*100);
@@ -806,6 +883,10 @@
     state.experience = [];
     addExperience({role:"Field Systems Coordinator", company:"Radiosource Telecoms", start:"Mar 2022", end:"Present", description:"Configure and maintain guarding-site setups on the iTALKPTT Push-to-Cellular platform for enterprise clients.\nBuild and manage shift schedules across multiple client sites, resolving conflicts before they affect live operations.\nHandle live client calls during incidents, providing real-time platform support."});
     addExperience({role:"Technical Support Agent", company:"Vodacom Business", start:"Jan 2019", end:"Feb 2022", description:"Provided tier-2 support for enterprise mobile and connectivity clients.\nDiagnosed and escalated network configuration issues across a regional client base."});
+
+    state.projects = [];
+    addProject({name:"Bean & Brew Café Web App", role:"Builder", link:"github.com/rahulnaidoo/bean-and-brew", description:"Full marketing site with AI chatbot, table booking with email notifications, and Supabase-backed authentication.\nBuilt with Node.js, Express, and Supabase."});
+    addProject({name:"ShiftTrack Calendar", role:"Builder", link:"", description:"Standalone shift-scheduling calendar app with South African public holidays, shift types, and a cultural observances layer, persisted with localStorage."});
 
     state.education = [];
     addEducation({degree:"National Diploma in Information Technology", school:"Durban University of Technology", start:"2015", end:"2018", description:""});
