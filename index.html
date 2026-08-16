@@ -1,1532 +1,1165 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ledger — Resume Builder</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-    <style>
-        :root {
-            --ink: #1B2430;
-            --paper: #FAF8F4;
-            --panel: #FFFFFF;
-            --slate: #616B7A;
-            --slate-soft: #88909B;
-            --line: #E5E1D8;
-            --accent: #B8763B;
-            --accent-dark: #8F5A28;
-            --accent-tint: #F4E6D6;
-            --success: #3F7A5C;
-            --danger: #B5473A;
-            --shadow: 0 20px 40px -12px rgba(27, 36, 48, 0.18);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html,
-        body {
-            height: 100%;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--paper);
-            color: var(--ink);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        ::selection {
-            background: var(--accent-tint);
-        }
-
-        /* ---------- Header ---------- */
-        header {
-            height: 68px;
-            background: var(--ink);
-            color: var(--paper);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 28px;
-            flex-shrink: 0;
-            z-index: 30;
-            gap: 20px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: 'Fraunces', serif;
-            font-weight: 600;
-            font-size: 1.35rem;
-            letter-spacing: 0.2px;
-            flex-shrink: 0;
-        }
-
-        .brand .mark {
-            width: 30px;
-            height: 30px;
-            border: 1.5px solid var(--accent);
-            border-radius: 3px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.7rem;
-            color: var(--accent);
-        }
-
-        .brand .tag {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: 0.68rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: #8892A0;
-            margin-left: 4px;
-            padding-top: 2px;
-        }
-
-        .toolbar {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .completion-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
-            color: #C7CCD4;
-            padding: 6px 12px;
-            border: 1px solid #333F4E;
-            border-radius: 20px;
-        }
-
-        .completion-track {
-            width: 60px;
-            height: 5px;
-            background: #333F4E;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .completion-fill {
-            height: 100%;
-            background: var(--accent);
-            width: 0%;
-            transition: width .35s ease;
-        }
-
-        .btn {
-            padding: 0.55rem 1.05rem;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all .15s;
-            border: 1px solid transparent;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: #C7CCD4;
-            border-color: #3A4552;
-        }
-
-        .btn-ghost:hover {
-            background: #242F3D;
-            color: #fff;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-dark);
-        }
-
-        .btn-primary:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
-
-        .privacy-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.7rem;
-            color: #8892A0;
-            padding: 4px 10px;
-            border: 1px solid #333F4E;
-            border-radius: 20px;
-            cursor: default;
-            white-space: nowrap;
-        }
-
-        .privacy-badge i {
-            color: var(--success);
-        }
-
-        .shared-device-banner {
-            background: #3A2F1E;
-            color: #F4E6D6;
-            font-size: 0.8rem;
-            padding: 8px 28px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .shared-device-banner i {
-            color: #E0A85C;
-        }
-
-        .shared-device-banner button {
-            margin-left: auto;
-            background: none;
-            border: none;
-            color: #F4E6D6;
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 4px 6px;
-        }
-
-        .shared-device-banner.hidden {
-            display: none;
-        }
-
-        /* ---------- Workspace ---------- */
-        .workspace {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .editor-panel {
-            width: 460px;
-            background: var(--panel);
-            border-right: 1px solid var(--line);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        /* Template picker */
-        .template-picker {
-            padding: 20px 22px 8px;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .template-picker .label-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 12px;
-        }
-
-        .template-picker h2 {
-            font-family: 'Fraunces', serif;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .swatches {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
-
-        .swatch {
-            flex: 1;
-            border: 1.5px solid var(--line);
-            border-radius: 8px;
-            padding: 10px 8px 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: all .15s;
-            background: #fff;
-        }
-
-        .swatch:hover {
-            border-color: var(--accent-tint);
-        }
-
-        .swatch.active {
-            border-color: var(--accent);
-            background: var(--accent-tint);
-        }
-
-        .swatch .swatch-preview {
-            height: 34px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 3px;
-            padding: 0 6px;
-        }
-
-        .swatch-preview .l1 {
-            height: 4px;
-            width: 60%;
-            border-radius: 1px;
-        }
-
-        .swatch-preview .l2 {
-            height: 3px;
-            width: 80%;
-            border-radius: 1px;
-            opacity: .5;
-        }
-
-        .swatch span {
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: var(--slate);
-        }
-
-        /* Nav tabs */
-        .editor-nav {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 0 14px;
-            border-bottom: 1px solid var(--line);
-            position: sticky;
-            top: 0;
-            background: var(--panel);
-            z-index: 10;
-        }
-
-        .nav-item {
-            padding: 14px 12px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: var(--slate-soft);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: color .15s;
-            white-space: nowrap;
-        }
-
-        .nav-item:hover {
-            color: var(--accent);
-        }
-
-        .nav-item.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-        }
-
-        .editor-forms {
-            padding: 24px 22px 60px;
-        }
-
-        .form-section {
-            display: none;
-            animation: fadeIn .3s ease;
-        }
-
-        .form-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(4px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        h2 {
-            font-family: 'Fraunces', serif;
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 1.4rem;
-        }
-
-        .section-hint {
-            font-size: 0.8rem;
-            color: var(--slate-soft);
-            margin-top: -1rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .input-group {
-            margin-bottom: 1.1rem;
-        }
-
-        .input-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .input-row .input-group {
-            flex: 1;
-        }
-
-        label {
-            display: block;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--slate);
-            margin-bottom: 0.4rem;
-            letter-spacing: 0.2px;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 9px 11px;
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            color: var(--ink);
-            background: #fff;
-            transition: border-color .15s, box-shadow .15s;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-tint);
-        }
-
-        textarea {
-            resize: vertical;
-        }
-
-        ::placeholder {
-            color: #B5BAC3;
-        }
-
-        .repeater-card {
-            background: #FCFBF9;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 14px;
-            position: relative;
-        }
-
-        .repeater-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .repeater-title {
-            font-weight: 600;
-            font-size: 0.88rem;
-            color: var(--ink);
-            font-family: 'Fraunces', serif;
-        }
-
-        .repeater-actions {
-            display: flex;
-            gap: 2px;
-            align-items: center;
-        }
-
-        .btn-icon {
-            background: none;
-            border: none;
-            color: var(--slate-soft);
-            cursor: pointer;
-            padding: 5px 7px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .btn-icon:hover {
-            background: #EFECE5;
-            color: var(--ink);
-        }
-
-        .btn-icon.danger:hover {
-            background: #FBE8E5;
-            color: var(--danger);
-        }
-
-        .btn-add-block {
-            width: 100%;
-            padding: 12px;
-            border: 1.5px dashed #C9B08A;
-            color: var(--accent-dark);
-            background: var(--accent-tint);
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all .15s;
-        }
-
-        .btn-add-block:hover {
-            background: #EED9BC;
-        }
-
-        .empty-note {
-            font-size: 0.82rem;
-            color: var(--slate-soft);
-            text-align: center;
-            padding: 18px 10px;
-            border: 1px dashed var(--line);
-            border-radius: 8px;
-            margin-bottom: 14px;
-        }
-
-        /* ---------- Preview ---------- */
-        .preview-panel {
-            flex: 1;
-            background: #3A414D;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 44px;
-        }
-
-        .zoom-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 20px;
-            background: rgba(255,255,255,.06);
-            border: 1px solid rgba(255,255,255,.1);
-            padding: 7px 14px;
-            border-radius: 20px;
-            color: #C7CCD4;
-            font-size: 0.78rem;
-            font-family: 'IBM Plex Mono', monospace;
-        }
-
-        .zoom-toolbar button {
-            background: none;
-            border: none;
-            color: #C7CCD4;
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 2px 6px;
-        }
-
-        .zoom-toolbar button:hover {
-            color: #fff;
-        }
-
-        .page-indicator {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .page-indicator .fa-file-lines {
-            color: var(--accent);
-        }
-
-        .resume-sheet {
-            background: #fff;
-            width: 210mm;
-            margin: 0 auto 40px;
-            min-height: 297mm;
-            padding: 16mm 15mm;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            color: #222;
-            height: auto;
-            transform-origin: top center;
-            transition: transform .15s ease;
-        }
-
-        /* Base CV element styling — modified per template class below */
-        #cv-content {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .cv-header {
-            padding-bottom: 18px;
-            margin-bottom: 22px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 2px solid var(--tpl-accent, #B8763B);
-        }
-
-        .cv-identity h1 {
-            font-family: 'Fraunces', serif;
-            font-size: 2.15rem;
-            font-weight: 700;
-            margin: 0;
-            line-height: 1.15;
-            color: #181F29;
-        }
-
-        .cv-identity .cv-role {
-            font-size: 1.02rem;
-            color: var(--tpl-accent, #B8763B);
-            font-weight: 500;
-            margin-top: 5px;
-            font-family: 'IBM Plex Mono', monospace;
-        }
-
-        .cv-contact {
-            text-align: right;
-            font-size: 0.8rem;
-            color: #4b5563;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .cv-contact span {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 6px;
-        }
-
-        .cv-contact svg {
-            width: 11px;
-            height: 11px;
-            fill: none;
-            stroke: var(--tpl-accent, #B8763B);
-            stroke-width: 2;
-            flex-shrink: 0;
-        }
-
-        .cv-section {
-            margin-bottom: 22px;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        .cv-section-title {
-            font-family: 'Fraunces', serif;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.4px;
-            color: #181F29;
-            margin-bottom: 11px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .cv-section-title::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: #E5E1D8;
-        }
-
-        .cv-summary {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #374151;
-        }
-
-        .skill-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 7px;
-        }
-
-        .skill-tag {
-            background: #F5F3EE;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: #374151;
-            border: 1px solid #E5E1D8;
-        }
-
-        .cv-item {
-            margin-bottom: 14px;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        .cv-item-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 3px;
-            gap: 10px;
-        }
-
-        .cv-role-title {
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: #181F29;
-        }
-
-        .cv-date {
-            font-size: 0.78rem;
-            color: #6b7280;
-            font-family: 'IBM Plex Mono', monospace;
-            white-space: nowrap;
-        }
-
-        .cv-company {
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: var(--tpl-accent, #B8763B);
-            margin-bottom: 5px;
-        }
-
-        .cv-desc {
-            font-size: 0.86rem;
-            line-height: 1.55;
-            color: #374151;
-        }
-
-        .cv-desc ul {
-            margin-left: 16px;
-            margin-top: 3px;
-        }
-
-        .cv-desc li {
-            margin-bottom: 3px;
-        }
-
-        .cv-link-line {
-            font-size: 0.78rem;
-            color: var(--tpl-accent, #B8763B);
-            margin-top: 2px;
-            font-family: 'IBM Plex Mono', monospace;
-        }
-
-        /* ---- Template: Ledger (default — editorial, brass rule, serif-forward) ---- */
-        .tpl-ledger {
-            --tpl-accent: #B8763B;
-        }
-
-        .tpl-ledger .cv-identity h1 {
-            text-transform: uppercase;
-            letter-spacing: -0.5px;
-        }
-
-        /* ---- Template: Foundry (bold, blueprint / grid, mono accents, left rule) ---- */
-        .tpl-foundry {
-            --tpl-accent: #2B5C8A;
-        }
-
-        .tpl-foundry .cv-header {
-            border-bottom: none;
-            border-left: 5px solid var(--tpl-accent);
-            padding-left: 18px;
-            padding-bottom: 0;
-            align-items: center;
-        }
-
-        .tpl-foundry .cv-identity h1 {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            text-transform: none;
-            font-size: 2rem;
-        }
-
-        .tpl-foundry .cv-identity .cv-role {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.82rem;
-            letter-spacing: 1px;
-        }
-
-        .tpl-foundry .cv-section-title {
-            font-family: 'Inter', sans-serif;
-            background: #F0F4F8;
-            padding: 6px 10px;
-            border-radius: 3px;
-        }
-
-        .tpl-foundry .cv-section-title::after {
-            display: none;
-        }
-
-        .tpl-foundry .skill-tag {
-            background: #EAF1F7;
-            border-color: #CFE0EC;
-            color: #1F3A52;
-            border-radius: 3px;
-        }
-
-        /* ---- Template: Folio (minimal, centered, classic serif) ---- */
-        .tpl-folio {
-            --tpl-accent: #3F7A5C;
-        }
-
-        .tpl-folio .cv-header {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            border-bottom: 1px solid #D8D3C7;
-            gap: 8px;
-        }
-
-        .tpl-folio .cv-identity h1 {
-            font-size: 1.9rem;
-            letter-spacing: 1px;
-        }
-
-        .tpl-folio .cv-contact {
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 14px;
-            text-align: left;
-        }
-
-        .tpl-folio .cv-contact span {
-            justify-content: flex-start;
-        }
-
-        .tpl-folio .cv-section-title {
-            justify-content: center;
-            text-align: center;
-        }
-
-        .tpl-folio .cv-section-title::after {
-            display: none;
-        }
-
-        /* Responsive */
-        @media (max-width:1100px) {
-            .workspace {
-                flex-direction: column;
-                overflow-y: auto;
-            }
-
-            .editor-panel {
-                width: 100%;
-                height: auto;
-                border-right: none;
-                border-bottom: 1px solid var(--line);
-            }
-
-            .preview-panel {
-                padding: 20px;
-            }
-
-            .resume-sheet {
-                width: 100%;
-                min-height: auto;
-            }
-
-            header {
-                flex-wrap: wrap;
-                height: auto;
-                padding: 12px 16px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Composer — Resume Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --ink:#14161c;
+  --panel:#1b1e28;
+  --panel-alt:#232733;
+  --line:#323848;
+  --text:#e9e7e0;
+  --text-dim:#9aa0b2;
+  --accent:#4f8a76;
+  --accent-bright:#72bfa3;
+  --gold:#c9a227;
+  --danger:#c0524a;
+  --paper:#fcfbf7;
+  --paper-text:#1c1c1c;
+  --paper-soft:#55544c;
+  --resume-accent:#4f8a76;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+}
+button, input, textarea, select{ font-family:inherit; }
+::selection{ background:var(--accent); color:#0a0c0f; }
+
+/* ============ SHELL ============ */
+.app{
+  display:grid;
+  grid-template-columns:400px 1fr;
+  min-height:100vh;
+}
+.rail{
+  width:46px;
+  background:var(--panel-alt);
+  border-right:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:18px 0;
+  gap:6px;
+  flex-shrink:0;
+}
+.rail-tab{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  background:transparent;
+  border:1px solid var(--line);
+  border-right:none;
+  color:var(--text-dim);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  padding:10px 7px;
+  cursor:pointer;
+  border-radius:6px 0 0 6px;
+  margin-right:-1px;
+  transition:.15s;
+}
+.rail-tab:hover{ color:var(--text); background:var(--panel); }
+.rail-tab.active{ color:var(--ink); background:var(--accent-bright); border-color:var(--accent-bright); }
+
+.panel-wrap{
+  display:flex;
+  min-width:0;
+}
+.panel{
+  background:var(--panel);
+  border-right:1px solid var(--line);
+  overflow-y:auto;
+  height:100vh;
+  position:sticky;
+  top:0;
+  flex:1;
+  min-width:0;
+}
+.panel::-webkit-scrollbar{ width:8px; }
+.panel::-webkit-scrollbar-thumb{ background:var(--line); border-radius:8px; }
+
+.brand{
+  padding:22px 22px 16px;
+  border-bottom:1px solid var(--line);
+}
+.brand-mark{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--accent-bright);
+}
+.brand h1{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:22px;
+  margin:4px 0 0;
+  font-weight:600;
+}
+.brand p{
+  margin:6px 0 0;
+  font-size:12.5px;
+  color:var(--text-dim);
+  line-height:1.5;
+}
+
+.section{
+  padding:20px 22px;
+  border-bottom:1px solid var(--line);
+}
+.section h2{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin:0 0 4px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.section h2 .num{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--accent-bright);
+  font-size:11px;
+}
+.section .hint{
+  font-size:12px;
+  color:var(--text-dim);
+  margin:0 0 14px;
+}
+
+.field{ margin-bottom:12px; }
+.field label{
+  display:block;
+  font-size:11.5px;
+  color:var(--text-dim);
+  margin-bottom:5px;
+  font-family:'IBM Plex Mono',monospace;
+  letter-spacing:.03em;
+}
+.field input[type=text], .field input[type=email], .field input[type=tel], .field input[type=url],
+.field input[type=month], .field input[type=date], .field textarea, .field select{
+  width:100%;
+  background:var(--panel-alt);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:9px 10px;
+  border-radius:7px;
+  font-size:13.5px;
+  outline:none;
+  transition:.15s border-color;
+}
+.field input:focus, .field textarea:focus, .field select:focus{
+  border-color:var(--accent-bright);
+}
+.field textarea{ resize:vertical; min-height:64px; line-height:1.5; }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.checkline{ display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-dim); margin-top:-2px; }
+.checkline input{ accent-color:var(--accent-bright); }
+
+/* repeatable entry cards */
+.entry{
+  background:var(--panel-alt);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:14px;
+  margin-bottom:12px;
+  position:relative;
+  cursor:grab;
+}
+.entry.dragging{ opacity:.4; }
+.entry-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.entry-head .drag-dots{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--text-dim);
+  font-size:11px;
+  letter-spacing:.1em;
+}
+.entry-actions{ display:flex; gap:6px; }
+.icon-btn{
+  background:transparent;
+  border:1px solid var(--line);
+  color:var(--text-dim);
+  width:26px; height:26px;
+  border-radius:6px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px;
+  line-height:1;
+}
+.icon-btn:hover{ color:var(--text); border-color:var(--accent-bright); }
+.icon-btn.danger:hover{ color:#fff; background:var(--danger); border-color:var(--danger); }
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  background:var(--accent);
+  color:#0b0f0d;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  font-weight:600;
+  font-size:13px;
+  cursor:pointer;
+  transition:.15s transform, .15s background;
+}
+.btn:hover{ background:var(--accent-bright); }
+.btn:active{ transform:scale(.97); }
+.btn-ghost{
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.btn-ghost:hover{ border-color:var(--accent-bright); color:var(--accent-bright); background:transparent; }
+.btn-block{ width:100%; }
+.btn-sm{ padding:7px 11px; font-size:12px; }
+
+.tags{ display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+.tag{
+  background:var(--panel);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:5px 8px 5px 10px;
+  border-radius:999px;
+  font-size:12px;
+  display:flex; align-items:center; gap:6px;
+}
+.tag button{
+  background:transparent; border:none; color:var(--text-dim); cursor:pointer; font-size:13px; padding:0;
+}
+.tag button:hover{ color:var(--danger); }
+
+/* ATS gauge */
+.ats-wrap{ display:flex; align-items:center; gap:14px; }
+.ats-gauge{ position:relative; width:74px; height:74px; flex-shrink:0; }
+.ats-gauge svg{ transform:rotate(-90deg); }
+.ats-gauge .pct{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600;
+}
+.ats-tips{ font-size:12px; color:var(--text-dim); list-style:none; margin:8px 0 0; padding:0; }
+.ats-tips li{ padding:3px 0 3px 14px; position:relative; }
+.ats-tips li::before{ content:"—"; position:absolute; left:0; color:var(--gold); }
+.ats-tips li.ok{ display:none; }
+
+/* template + style controls */
+.swatches{ display:flex; gap:8px; }
+.swatch-tpl{
+  flex:1;
+  border:1px solid var(--line);
+  background:var(--panel-alt);
+  border-radius:7px;
+  padding:8px 6px;
+  color:var(--text-dim);
+  font-size:11px;
+  cursor:pointer;
+  text-align:center;
+}
+.swatch-tpl.active{ border-color:var(--accent-bright); color:var(--accent-bright); background:rgba(114,191,163,.08); }
+.swatch-tpl .mini{
+  height:32px; border-radius:4px; margin-bottom:6px;
+  background:linear-gradient(180deg, #fff 0 8px, #ddd 8px 10px, #fff 10px);
+}
+.color-row{ display:flex; align-items:center; gap:10px; }
+.color-row input[type=color]{
+  width:34px; height:34px; border:1px solid var(--line); border-radius:8px; background:none; padding:2px; cursor:pointer;
+}
+.density-toggle{ display:flex; gap:8px; }
+.density-toggle button{ flex:1; }
+
+.actions-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.footer-note{ padding:16px 22px 26px; font-size:11px; color:var(--text-dim); line-height:1.6; }
+
+/* ============ PREVIEW STAGE ============ */
+.stage{
+  background:#0f1116;
+  background-image:radial-gradient(circle at 1px 1px, #1c1f28 1px, transparent 0);
+  background-size:22px 22px;
+  overflow-y:auto;
+  height:100vh;
+  padding:42px 36px;
+  display:flex;
+  justify-content:center;
+}
+.stage-inner{ width:100%; max-width:820px; }
+.stage-toolbar{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:16px;
+}
+.stage-toolbar .pagehint{ font-size:12px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; }
+.stage-toolbar .right{ display:flex; gap:10px; }
+
+.paper{
+  background:var(--paper);
+  color:var(--paper-text);
+  width:100%;
+  min-height:1120px;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.05);
+  padding:56px 60px;
+  border-radius:2px;
+}
+.paper.density-compact{ padding:38px 44px; }
+
+/* ---- shared resume markup, styled per template ---- */
+.r-name{ margin:0; }
+.r-title{ margin:2px 0 0; }
+.r-contact{ margin:10px 0 0; display:flex; flex-wrap:wrap; gap:4px 14px; }
+.r-contact span{ white-space:nowrap; }
+.r-section{ margin-top:22px; }
+.r-section:first-of-type{ margin-top:26px; }
+.r-heading{ margin:0 0 10px; }
+.r-summary{ margin:0; }
+.r-item{ margin-bottom:14px; }
+.r-item:last-child{ margin-bottom:0; }
+.r-item-top{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.r-item-role{ margin:0; }
+.r-item-org{ margin:1px 0 0; }
+.r-item-date{ white-space:nowrap; font-variant-numeric:tabular-nums; }
+.r-bullets{ margin:6px 0 0; padding-left:18px; }
+.r-bullets li{ margin-bottom:3px; }
+.r-skillrow{ display:flex; flex-wrap:wrap; gap:8px; }
+.r-skill{ font-size:.85em; }
+.r-empty-msg{ color:#b7b5aa; font-style:italic; }
+
+/* Template: MODERN */
+.tpl-modern{ font-family:'Inter',sans-serif; }
+.tpl-modern .r-name{ font-family:'Space Grotesk',sans-serif; font-size:32px; font-weight:700; color:var(--resume-accent); }
+.tpl-modern .r-title{ font-size:14px; color:var(--paper-soft); font-weight:500; letter-spacing:.02em; }
+.tpl-modern .r-contact{ font-size:12px; color:var(--paper-soft); }
+.tpl-modern .r-heading{ font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--resume-accent); border-left:3px solid var(--resume-accent); padding-left:9px; }
+.tpl-modern .r-summary{ font-size:13.5px; line-height:1.65; }
+.tpl-modern .r-item-role{ font-size:14.5px; font-weight:600; }
+.tpl-modern .r-item-org{ font-size:13px; color:var(--paper-soft); }
+.tpl-modern .r-item-date{ font-size:12px; color:var(--paper-soft); }
+.tpl-modern .r-bullets{ font-size:13px; line-height:1.6; }
+.tpl-modern .r-skill{ background:color-mix(in srgb, var(--resume-accent) 14%, white); color:var(--resume-accent); border:1px solid color-mix(in srgb, var(--resume-accent) 35%, white); padding:4px 10px; border-radius:999px; font-weight:500; }
+
+/* Template: CLASSIC */
+.tpl-classic{ font-family:'Source Serif 4',serif; text-align:center; }
+.tpl-classic .r-name{ font-size:30px; font-weight:700; letter-spacing:.03em; }
+.tpl-classic .r-title{ font-size:13.5px; color:var(--paper-soft); text-transform:uppercase; letter-spacing:.14em; margin-top:5px; }
+.tpl-classic .r-contact{ justify-content:center; font-size:12px; color:var(--paper-soft); border-top:1px solid #cfcdbe; border-bottom:1px solid #cfcdbe; padding:8px 0; margin-top:14px; }
+.tpl-classic .r-section{ text-align:left; }
+.tpl-classic .r-heading{ font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:.16em; text-align:center; border-bottom:1px solid #cfcdbe; padding-bottom:6px; }
+.tpl-classic .r-summary{ font-size:13.5px; line-height:1.7; text-align:left; }
+.tpl-classic .r-item-role{ font-size:14.5px; font-weight:700; }
+.tpl-classic .r-item-org{ font-size:13px; font-style:italic; color:var(--paper-soft); }
+.tpl-classic .r-item-date{ font-size:12px; color:var(--paper-soft); font-style:italic; }
+.tpl-classic .r-bullets{ font-size:13px; line-height:1.65; }
+.tpl-classic .r-skillrow{ justify-content:flex-start; }
+.tpl-classic .r-skill{ border-right:1px solid #cfcdbe; padding-right:10px; }
+.tpl-classic .r-skill:last-child{ border-right:none; }
+
+/* Template: MINIMAL */
+.tpl-minimal{ font-family:'Inter',sans-serif; font-weight:300; }
+.tpl-minimal .r-name{ font-size:28px; font-weight:300; letter-spacing:.01em; }
+.tpl-minimal .r-title{ font-size:13px; color:var(--paper-soft); font-weight:400; }
+.tpl-minimal .r-contact{ font-size:11.5px; color:var(--paper-soft); text-transform:uppercase; letter-spacing:.06em; }
+.tpl-minimal .r-heading{ font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.22em; color:#9a988c; }
+.tpl-minimal .r-summary{ font-size:13.5px; line-height:1.75; font-weight:300; }
+.tpl-minimal .r-item-role{ font-size:14px; font-weight:500; }
+.tpl-minimal .r-item-org{ font-size:12.5px; color:var(--paper-soft); }
+.tpl-minimal .r-item-date{ font-size:11.5px; color:#9a988c; }
+.tpl-minimal .r-bullets{ font-size:13px; line-height:1.7; font-weight:300; }
+.tpl-minimal .r-bullets li::marker{ color:var(--resume-accent); }
+.tpl-minimal .r-skill::after{ content:"·"; margin-left:8px; color:#c9c7ba; }
+.tpl-minimal .r-skill:last-child::after{ content:""; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 980px){
+  .app{ grid-template-columns:1fr; }
+  .panel-wrap{ order:2; }
+  .panel{ height:auto; position:relative; }
+  .rail{ flex-direction:row; width:100%; height:auto; overflow-x:auto; order:1; padding:10px; }
+  .rail-tab{ writing-mode:horizontal-tb; border:1px solid var(--line); border-radius:6px; flex-shrink:0; }
+  .stage{ height:auto; order:3; padding:24px 14px; }
+  .paper{ padding:34px 26px; }
+}
+
+/* ============ PRINT ============ */
+@media print{
+  body *{ visibility:hidden; }
+  .paper, .paper *{ visibility:visible; }
+  .paper{ box-shadow:none; position:absolute; top:0; left:0; width:100%; padding:0 6mm; border-radius:0; }
+  @page{ margin:14mm 12mm; }
+}
+</style>
 </head>
-
 <body>
 
-    <header>
-        <div class="brand">
-            <div class="mark">Ld</div>
-            Ledger <span class="tag">Resume Studio</span>
+<div class="app">
+  <div class="rail" id="rail"></div>
+
+  <div class="panel-wrap">
+    <div class="panel" id="panel">
+      <div class="brand">
+        <div class="brand-mark">Composer</div>
+        <h1>Resume Builder</h1>
+        <p>Fill in each section on the left — your resume updates live on the right. Everything is saved to this browser automatically.</p>
+      </div>
+
+      <!-- PERSONAL -->
+      <div class="section" id="sec-personal">
+        <h2><span class="num">01</span> Personal details</h2>
+        <div class="field"><label>Full name</label><input type="text" id="p-name" placeholder="Jordan Vale"></div>
+        <div class="field"><label>Target title / headline</label><input type="text" id="p-title" placeholder="Senior Product Designer"></div>
+        <div class="row2">
+          <div class="field"><label>Email</label><input type="email" id="p-email" placeholder="jordan@email.com"></div>
+          <div class="field"><label>Phone</label><input type="tel" id="p-phone" placeholder="+27 71 234 5678"></div>
         </div>
-        <div class="toolbar">
-            <div class="completion-pill">
-                <i class="fas fa-signature" style="color:var(--accent)"></i>
-                <span id="completion-label">0% complete</span>
-                <div class="completion-track">
-                    <div class="completion-fill" id="completion-fill"></div>
-                </div>
-            </div>
-            <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()"><i
-                    class="fas fa-upload"></i> Import</button>
-            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-            <button class="btn btn-ghost" onclick="exportJSON()"><i class="fas fa-file-export"></i> Backup</button>
-            <button class="btn btn-ghost" onclick="loadDemo()"><i class="fas fa-magic"></i> Demo</button>
-            <button class="btn btn-ghost" onclick="resetData()"><i class="fas fa-trash-alt"></i> Reset</button>
-            <button class="btn btn-primary" id="download-btn" onclick="generatePDF()"><i class="fas fa-download"></i> Download
-                PDF</button>
-            <div class="privacy-badge" id="privacy-badge"
-                title="Everything you type is saved only in this browser, on this device. Nothing is uploaded to a server, and no other visitor can ever see it.">
-                <i class="fas fa-lock"></i> Private to this browser
-            </div>
+        <div class="row2">
+          <div class="field"><label>Location</label><input type="text" id="p-location" placeholder="Durban, South Africa"></div>
+          <div class="field"><label>Website / portfolio</label><input type="url" id="p-website" placeholder="jordanvale.com"></div>
         </div>
-    </header>
-
-    <div class="shared-device-banner" id="shared-device-banner">
-        <i class="fas fa-triangle-exclamation"></i>
-        <span>On a shared or public computer? Your draft is saved to <strong>this browser only</strong> — click
-            <strong>Reset</strong> before you walk away so the next person can't see it.</span>
-        <button class="btn-icon" onclick="dismissBanner()" title="Dismiss"><i class="fas fa-xmark"></i></button>
-    </div>
-
-    <div class="workspace">
-        <div class="editor-panel">
-
-            <div class="template-picker">
-                <div class="label-row">
-                    <h2>Template</h2>
-                </div>
-                <div class="swatches">
-                    <div class="swatch active" data-tpl="tpl-ledger" onclick="setTemplate('tpl-ledger', this)">
-                        <div class="swatch-preview" style="background:#FBF6EE;">
-                            <div class="l1" style="background:#B8763B;"></div>
-                            <div class="l2" style="background:#8F5A28;"></div>
-                        </div>
-                        <span>Ledger</span>
-                    </div>
-                    <div class="swatch" data-tpl="tpl-foundry" onclick="setTemplate('tpl-foundry', this)">
-                        <div class="swatch-preview" style="background:#EEF3F8;">
-                            <div class="l1" style="background:#2B5C8A;"></div>
-                            <div class="l2" style="background:#2B5C8A;"></div>
-                        </div>
-                        <span>Foundry</span>
-                    </div>
-                    <div class="swatch" data-tpl="tpl-folio" onclick="setTemplate('tpl-folio', this)">
-                        <div class="swatch-preview" style="background:#F1F5F2;">
-                            <div class="l1" style="background:#3F7A5C;margin:0 auto;"></div>
-                            <div class="l2" style="background:#3F7A5C;margin:0 auto;width:50%;"></div>
-                        </div>
-                        <span>Folio</span>
-                    </div>
-                </div>
-            </div>
-
-            <nav class="editor-nav">
-                <div class="nav-item active" onclick="setTab('basics', this)">Profile</div>
-                <div class="nav-item" onclick="setTab('experience', this)">Experience</div>
-                <div class="nav-item" onclick="setTab('education', this)">Education</div>
-                <div class="nav-item" onclick="setTab('projects', this)">Projects</div>
-                <div class="nav-item" onclick="setTab('skills', this)">Skills</div>
-                <div class="nav-item" onclick="setTab('certs', this)">Certifications</div>
-            </nav>
-
-            <div class="editor-forms">
-
-                <div id="basics" class="form-section active">
-                    <h2>Personal Information</h2>
-                    <div class="input-group"><label>Full Name</label><input type="text" id="in-name"
-                            placeholder="e.g. Sarah Chen" oninput="updateCV()"></div>
-                    <div class="input-group"><label>Target Job Title</label><input type="text" id="in-title"
-                            placeholder="e.g. Senior UX Designer" oninput="updateCV()"></div>
-                    <div class="input-row">
-                        <div class="input-group"><label>Email</label><input type="email" id="in-email"
-                                placeholder="sarah@email.com" oninput="updateCV()"></div>
-                        <div class="input-group"><label>Phone</label><input type="tel" id="in-phone"
-                                placeholder="+1 555 000 0000" oninput="updateCV()"></div>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-group"><label>Location</label><input type="text" id="in-loc"
-                                placeholder="New York, NY" oninput="updateCV()"></div>
-                        <div class="input-group"><label>Portfolio / LinkedIn</label><input type="text" id="in-link"
-                                placeholder="linkedin.com/in/sarahchen" oninput="updateCV()"></div>
-                    </div>
-                    <div class="input-group">
-                        <label>Professional Summary</label>
-                        <textarea id="in-summary" rows="6"
-                            placeholder="2–3 sentences on your expertise, focus area, and what you're looking for next."
-                            oninput="updateCV()"></textarea>
-                    </div>
-                </div>
-
-                <div id="experience" class="form-section">
-                    <h2>Work Experience</h2>
-                    <p class="section-hint">Most recent role first. Use the arrows to reorder.</p>
-                    <div id="exp-form-list"></div>
-                    <div id="exp-empty" class="empty-note">No experience added yet — add your most recent role first.
-                    </div>
-                    <button class="btn btn-add-block" onclick="addExperience()"><i class="fas fa-plus"></i> Add
-                        Position</button>
-                </div>
-
-                <div id="education" class="form-section">
-                    <h2>Education</h2>
-                    <div id="edu-form-list"></div>
-                    <div id="edu-empty" class="empty-note">No education added yet.</div>
-                    <button class="btn btn-add-block" onclick="addEducation()"><i class="fas fa-plus"></i> Add
-                        Education</button>
-                </div>
-
-                <div id="projects" class="form-section">
-                    <h2>Projects</h2>
-                    <p class="section-hint">Optional — great for students, career changers, or portfolio work.</p>
-                    <div id="proj-form-list"></div>
-                    <div id="proj-empty" class="empty-note">No projects added yet.</div>
-                    <button class="btn btn-add-block" onclick="addProject()"><i class="fas fa-plus"></i> Add
-                        Project</button>
-                </div>
-
-                <div id="skills" class="form-section">
-                    <h2>Skills & Tools</h2>
-                    <p class="section-hint">Separate items with commas.</p>
-                    <textarea id="in-skills" rows="6" placeholder="Figma, Adobe CC, HTML, CSS, User Research..."
-                        oninput="updateCV()"></textarea>
-                </div>
-
-                <div id="certs" class="form-section">
-                    <h2>Certifications</h2>
-                    <div id="cert-form-list"></div>
-                    <div id="cert-empty" class="empty-note">No certifications added yet.</div>
-                    <button class="btn btn-add-block" onclick="addCert()"><i class="fas fa-plus"></i> Add
-                        Certification</button>
-                </div>
-
-            </div>
+        <div class="row2">
+          <div class="field"><label>LinkedIn</label><input type="text" id="p-linkedin" placeholder="linkedin.com/in/jordanvale"></div>
+          <div class="field"><label>GitHub</label><input type="text" id="p-github" placeholder="github.com/jordanvale"></div>
         </div>
+      </div>
 
-        <div class="preview-panel">
-            <div class="zoom-toolbar">
-                <div class="page-indicator"><i class="fas fa-file-lines"></i> <span id="page-count-label">1 page</span></div>
-                <span style="color:#4A5568">·</span>
-                <button onclick="adjustZoom(-0.1)" title="Zoom out"><i class="fas fa-magnifying-glass-minus"></i></button>
-                <span id="zoom-label">100%</span>
-                <button onclick="adjustZoom(0.1)" title="Zoom in"><i class="fas fa-magnifying-glass-plus"></i></button>
-            </div>
-            <div id="resume-sheet" class="resume-sheet tpl-ledger">
-                <div id="cv-content">
-                    <div class="cv-header">
-                        <div class="cv-identity">
-                            <h1 id="out-name">Your Name</h1>
-                            <div class="cv-role" id="out-title">Professional Title</div>
-                        </div>
-                        <div class="cv-contact">
-                            <span id="out-email-box">
-                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l9 6 9-6M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg>
-                                <span id="out-email"></span>
-                            </span>
-                            <span id="out-phone-box">
-                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1z"/></svg>
-                                <span id="out-phone"></span>
-                            </span>
-                            <span id="out-loc-box">
-                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.1-7-11.5A7 7 0 0112 2a7 7 0 017 7.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
-                                <span id="out-loc"></span>
-                            </span>
-                            <span id="out-link-box">
-                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14a5 5 0 007.1 0l3-3a5 5 0 00-7.1-7.1l-1.5 1.4M14 10a5 5 0 00-7.1 0l-3 3a5 5 0 007.1 7.1l1.4-1.4"/></svg>
-                                <span id="out-link"></span>
-                            </span>
-                        </div>
-                    </div>
+      <!-- SUMMARY -->
+      <div class="section" id="sec-summary">
+        <h2><span class="num">02</span> Summary</h2>
+        <p class="hint">Two to four sentences on who you are and what you bring.</p>
+        <div class="field"><textarea id="p-summary" rows="4" placeholder="Product designer with 6 years building B2B dashboards, taking features from research to shipped UI. Led a 3-person design team and cut onboarding drop-off by 24%."></textarea></div>
+      </div>
 
-                    <div class="cv-section" id="section-summary">
-                        <div class="cv-section-title">Professional Profile</div>
-                        <div class="cv-summary" id="out-summary">Your professional profile summary will appear here as
-                            you type.</div>
-                    </div>
+      <!-- EXPERIENCE -->
+      <div class="section" id="sec-experience">
+        <h2><span class="num">03</span> Experience</h2>
+        <p class="hint">Drag a card by its dots to reorder. One bullet per line.</p>
+        <div id="list-experience"></div>
+        <button class="btn btn-ghost btn-block" data-add="experience">+ Add experience</button>
+      </div>
 
-                    <div class="cv-section" id="section-skills">
-                        <div class="cv-section-title">Skills</div>
-                        <div class="skill-tags" id="out-skills"></div>
-                    </div>
+      <!-- EDUCATION -->
+      <div class="section" id="sec-education">
+        <h2><span class="num">04</span> Education</h2>
+        <div id="list-education"></div>
+        <button class="btn btn-ghost btn-block" data-add="education">+ Add education</button>
+      </div>
 
-                    <div class="cv-section" id="section-exp">
-                        <div class="cv-section-title">Experience</div>
-                        <div id="out-exp-list"></div>
-                    </div>
+      <!-- SKILLS -->
+      <div class="section" id="sec-skills">
+        <h2><span class="num">05</span> Skills</h2>
+        <p class="hint">Type a skill and press Enter.</p>
+        <div class="field"><input type="text" id="skill-input" placeholder="e.g. Figma, SQL, Stakeholder management"></div>
+        <div class="tags" id="skill-tags"></div>
+      </div>
 
-                    <div class="cv-section" id="section-proj" style="display:none;">
-                        <div class="cv-section-title">Projects</div>
-                        <div id="out-proj-list"></div>
-                    </div>
+      <!-- PROJECTS -->
+      <div class="section" id="sec-projects">
+        <h2><span class="num">06</span> Projects</h2>
+        <div id="list-projects"></div>
+        <button class="btn btn-ghost btn-block" data-add="projects">+ Add project</button>
+      </div>
 
-                    <div class="cv-section" id="section-edu">
-                        <div class="cv-section-title">Education</div>
-                        <div id="out-edu-list"></div>
-                    </div>
+      <!-- CERTIFICATIONS -->
+      <div class="section" id="sec-certs">
+        <h2><span class="num">07</span> Certifications</h2>
+        <div id="list-certifications"></div>
+        <button class="btn btn-ghost btn-block" data-add="certifications">+ Add certification</button>
+      </div>
 
-                    <div class="cv-section" id="section-cert" style="display:none;">
-                        <div class="cv-section-title">Certifications</div>
-                        <div id="out-cert-list"></div>
-                    </div>
-                </div>
-            </div>
+      <!-- LANGUAGES -->
+      <div class="section" id="sec-languages">
+        <h2><span class="num">08</span> Languages</h2>
+        <div id="list-languages"></div>
+        <button class="btn btn-ghost btn-block" data-add="languages">+ Add language</button>
+      </div>
+
+      <!-- CUSTOM -->
+      <div class="section" id="sec-custom">
+        <h2><span class="num">09</span> Custom sections</h2>
+        <p class="hint">Add anything else — awards, publications, volunteering.</p>
+        <div id="list-custom"></div>
+        <button class="btn btn-ghost btn-block" data-add="custom">+ Add custom section</button>
+      </div>
+
+      <!-- ATS -->
+      <div class="section" id="sec-ats">
+        <h2><span class="num">10</span> ATS readiness</h2>
+        <div class="ats-wrap">
+          <div class="ats-gauge">
+            <svg width="74" height="74" viewBox="0 0 74 74">
+              <circle cx="37" cy="37" r="31" fill="none" stroke="var(--line)" stroke-width="7"></circle>
+              <circle id="ats-ring" cx="37" cy="37" r="31" fill="none" stroke="var(--accent-bright)" stroke-width="7" stroke-linecap="round" stroke-dasharray="194.7" stroke-dashoffset="194.7"></circle>
+            </svg>
+            <div class="pct" id="ats-pct">0%</div>
+          </div>
+          <div style="font-size:12px;color:var(--text-dim);flex:1;">A quick heuristic score for how machine-readable and complete your resume is. Not affiliated with any specific ATS.</div>
         </div>
-    </div>
-
-    <script>
-        const STORAGE_KEY = 'ledger_resume_v1';
-        const A4_HEIGHT_MM = 297;
-        let zoomLevel = 1;
-
-        let cvData = { experience: [], education: [], projects: [], certs: [], template: 'tpl-ledger' };
-
-        window.onload = function () {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    const d = JSON.parse(saved);
-                    loadIntoForm(d);
-                } catch (e) { console.error('Could not load saved resume', e); }
-            }
-            if (localStorage.getItem('ledger_banner_dismissed') === '1') {
-                document.getElementById('shared-device-banner').classList.add('hidden');
-            }
-            renderForms();
-            updateCV();
-        };
-
-        function loadIntoForm(d) {
-            document.getElementById('in-name').value = d.name || '';
-            document.getElementById('in-title').value = d.title || '';
-            document.getElementById('in-email').value = d.email || '';
-            document.getElementById('in-phone').value = d.phone || '';
-            document.getElementById('in-loc').value = d.loc || '';
-            document.getElementById('in-link').value = d.link || '';
-            document.getElementById('in-summary').value = d.summary || '';
-            document.getElementById('in-skills').value = d.skills || '';
-            cvData.experience = d.experience || [];
-            cvData.education = d.education || [];
-            cvData.projects = d.projects || [];
-            cvData.certs = d.certs || [];
-            cvData.template = d.template || 'tpl-ledger';
-            applyTemplateClass(cvData.template);
-        }
-
-        function collectData() {
-            return {
-                name: document.getElementById('in-name').value,
-                title: document.getElementById('in-title').value,
-                email: document.getElementById('in-email').value,
-                phone: document.getElementById('in-phone').value,
-                loc: document.getElementById('in-loc').value,
-                link: document.getElementById('in-link').value,
-                summary: document.getElementById('in-summary').value,
-                skills: document.getElementById('in-skills').value,
-                experience: cvData.experience,
-                education: cvData.education,
-                projects: cvData.projects,
-                certs: cvData.certs,
-                template: cvData.template
-            };
-        }
-
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(collectData()));
-        }
-
-        function dismissBanner() {
-            document.getElementById('shared-device-banner').classList.add('hidden');
-            localStorage.setItem('ledger_banner_dismissed', '1');
-        }
-
-        /* ---------- Tabs & templates ---------- */
-        function setTab(id, el) {
-            document.querySelectorAll('.form-section').forEach(e => e.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
-        }
-
-        function setTemplate(tpl, el) {
-            cvData.template = tpl;
-            applyTemplateClass(tpl);
-            document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-            el.classList.add('active');
-            saveData();
-        }
-        function applyTemplateClass(tpl) {
-            const sheet = document.getElementById('resume-sheet');
-            sheet.classList.remove('tpl-ledger', 'tpl-foundry', 'tpl-folio');
-            sheet.classList.add(tpl);
-            document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.tpl === tpl));
-        }
-
-        /* ---------- Zoom (view-only — never affects the exported PDF) ---------- */
-        function adjustZoom(delta) {
-            zoomLevel = Math.min(1.3, Math.max(0.5, +(zoomLevel + delta).toFixed(2)));
-            document.getElementById('resume-sheet').style.transform = `scale(${zoomLevel})`;
-            document.getElementById('zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
-        }
-
-        /* ---------- Rendering ---------- */
-        function updateCV() {
-            const setText = (id, val, def) => document.getElementById(id).textContent = val || def;
-            const toggleBox = (boxId, val) => document.getElementById(boxId).style.display = val ? 'flex' : 'none';
-
-            setText('out-name', document.getElementById('in-name').value, 'YOUR NAME');
-            setText('out-title', document.getElementById('in-title').value, 'Professional Title');
-
-            const email = document.getElementById('in-email').value;
-            setText('out-email', email, ''); toggleBox('out-email-box', email);
-            const phone = document.getElementById('in-phone').value;
-            setText('out-phone', phone, ''); toggleBox('out-phone-box', phone);
-            const loc = document.getElementById('in-loc').value;
-            setText('out-loc', loc, ''); toggleBox('out-loc-box', loc);
-            const link = document.getElementById('in-link').value;
-            setText('out-link', link, ''); toggleBox('out-link-box', link);
-
-            const summary = document.getElementById('in-summary').value;
-            setText('out-summary', summary, 'Your professional profile summary will appear here as you type.');
-            document.getElementById('section-summary').style.display = summary ? 'block' : (summary === '' ? 'block' : 'none');
-
-            const skillInput = document.getElementById('in-skills').value;
-            const skillContainer = document.getElementById('out-skills');
-            skillContainer.innerHTML = '';
-            skillInput.split(',').forEach(s => {
-                if (s.trim()) {
-                    const tag = document.createElement('span');
-                    tag.className = 'skill-tag';
-                    tag.textContent = s.trim();
-                    skillContainer.appendChild(tag);
-                }
-            });
-            document.getElementById('section-skills').style.display = skillInput.trim() ? 'block' : 'none';
-
-            renderPreviewList('out-exp-list', cvData.experience, item => `
-    <div class="cv-item">
-      <div class="cv-item-head">
-        <div class="cv-role-title">${escapeHtml(item.role) || 'Job Title'}</div>
-        <div class="cv-date">${escapeHtml(item.start || '')} – ${escapeHtml(item.end || '')}</div>
+        <ul class="ats-tips" id="ats-tips"></ul>
       </div>
-      <div class="cv-company">${escapeHtml(item.company) || 'Company Name'}${item.city ? ' | ' + escapeHtml(item.city) : ''}</div>
-      <div class="cv-desc">${item.desc ? escapeHtml(item.desc).replace(/\n/g, '<br>') : ''}</div>
-    </div>
-  `);
-            document.getElementById('section-exp').style.display = cvData.experience.length ? 'block' : 'none';
 
-            renderPreviewList('out-edu-list', cvData.education, item => `
-    <div class="cv-item">
-      <div class="cv-item-head">
-        <div class="cv-role-title">${escapeHtml(item.school) || 'University'}</div>
-        <div class="cv-date">${escapeHtml(item.year || '')}</div>
+      <!-- STYLE -->
+      <div class="section" id="sec-style">
+        <h2><span class="num">11</span> Template &amp; style</h2>
+        <div class="swatches" id="tpl-swatches">
+          <button class="swatch-tpl" data-tpl="modern"><div class="mini" style="background:linear-gradient(180deg,#fff 0 10px,#4f8a76 10px 13px,#fff 13px);"></div>Modern</button>
+          <button class="swatch-tpl" data-tpl="classic"><div class="mini" style="background:linear-gradient(180deg,#fff 0 6px,#333 6px 8px,#fff 8px 20px,#333 20px 21px,#fff 21px);"></div>Classic</button>
+          <button class="swatch-tpl" data-tpl="minimal"><div class="mini" style="background:linear-gradient(180deg,#fff 0 8px,#ccc 8px 9px,#fff 9px);"></div>Minimal</button>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>Accent color</label>
+          <div class="color-row">
+            <input type="color" id="accent-color" value="#4f8a76">
+            <span id="accent-hex" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);">#4f8a76</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Density</label>
+          <div class="density-toggle">
+            <button class="btn btn-ghost btn-sm" data-density="comfortable">Comfortable</button>
+            <button class="btn btn-ghost btn-sm" data-density="compact">Compact</button>
+          </div>
+        </div>
       </div>
-      <div class="cv-company">${escapeHtml(item.degree) || 'Degree'}</div>
-    </div>
-  `);
-            document.getElementById('section-edu').style.display = cvData.education.length ? 'block' : 'none';
 
-            renderPreviewList('out-proj-list', cvData.projects, item => `
-    <div class="cv-item">
-      <div class="cv-item-head">
-        <div class="cv-role-title">${escapeHtml(item.name) || 'Project Name'}</div>
-        <div class="cv-date">${escapeHtml(item.date || '')}</div>
+      <!-- ACTIONS -->
+      <div class="section" id="sec-actions">
+        <h2><span class="num">12</span> Save &amp; export</h2>
+        <button class="btn btn-block" id="btn-pdf">⬇ Download PDF</button>
+        <div class="actions-grid">
+          <button class="btn btn-ghost" id="btn-export">Export JSON</button>
+          <button class="btn btn-ghost" id="btn-import">Import JSON</button>
+          <button class="btn btn-ghost" id="btn-sample">Load sample</button>
+          <button class="btn btn-ghost" id="btn-clear">Clear all</button>
+        </div>
+        <input type="file" id="file-import" accept="application/json" style="display:none;">
       </div>
-      ${item.link ? `<div class="cv-link-line">${escapeHtml(item.link)}</div>` : ''}
-      <div class="cv-desc">${item.desc ? escapeHtml(item.desc).replace(/\n/g, '<br>') : ''}</div>
-    </div>
-  `);
-            document.getElementById('section-proj').style.display = cvData.projects.length ? 'block' : 'none';
 
-            renderPreviewList('out-cert-list', cvData.certs, item => `
-    <div class="cv-item">
-      <div class="cv-item-head">
-        <div class="cv-role-title">${escapeHtml(item.name) || 'Certification'}</div>
-        <div class="cv-date">${escapeHtml(item.year || '')}</div>
+      <div class="footer-note">Autosaves to this browser's local storage as you type. Nothing is sent anywhere — export a JSON backup if you're switching devices.</div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-inner">
+      <div class="stage-toolbar">
+        <div class="pagehint" id="page-hint">A4 / Letter friendly · single page target</div>
       </div>
-      <div class="cv-company">${escapeHtml(item.issuer) || ''}</div>
+      <div class="paper tpl-modern density-comfortable" id="paper" style="--resume-accent:#4f8a76;"></div>
     </div>
-  `);
-            document.getElementById('section-cert').style.display = cvData.certs.length ? 'block' : 'none';
+  </div>
+</div>
 
-            updateCompletion();
-            updatePageCount();
-            saveData();
-        }
+<script>
+(function(){
+"use strict";
 
-        function renderPreviewList(id, data, tpl) {
-            const container = document.getElementById(id);
-            container.innerHTML = '';
-            data.forEach(item => container.innerHTML += tpl(item));
-        }
+/* ---------- helpers ---------- */
+const $ = (sel, ctx) => (ctx||document).querySelector(sel);
+const $$ = (sel, ctx) => Array.from((ctx||document).querySelectorAll(sel));
+const uid = () => Math.random().toString(36).slice(2,10);
+function esc(str){
+  return String(str==null?'':str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const STORAGE_KEY = 'composerResumeState.v1';
 
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
+/* ---------- default state ---------- */
+function blankState(){
+  return {
+    meta:{ template:'modern', accent:'#4f8a76', density:'comfortable' },
+    personal:{ name:'', title:'', email:'', phone:'', location:'', website:'', linkedin:'', github:'' },
+    summary:'',
+    experience:[],
+    education:[],
+    skills:[],
+    projects:[],
+    certifications:[],
+    languages:[],
+    custom:[]
+  };
+}
+let state = blankState();
 
-        /* ---------- Page count estimate ----------
-           Mirrors what html2pdf/jsPDF will do: an A4 sheet is 297mm tall, so
-           however many 297mm bands the rendered sheet spans is how many pages
-           the download will have. Showing this live keeps the editor honest
-           about what you'll actually get. */
-        function updatePageCount() {
-            const sheet = document.getElementById('resume-sheet');
-            const mmPerPx = 25.4 / 96; // CSS px -> mm at 96dpi
-            const heightMM = sheet.scrollHeight * mmPerPx;
-            const pages = Math.max(1, Math.ceil(heightMM / A4_HEIGHT_MM - 0.02));
-            const label = document.getElementById('page-count-label');
-            label.textContent = pages === 1 ? '1 page' : pages + ' pages';
-        }
+function newExperience(){ return { id:uid(), role:'', company:'', location:'', start:'', end:'', current:false, bullets:'' }; }
+function newEducation(){ return { id:uid(), school:'', degree:'', field:'', start:'', end:'', details:'' }; }
+function newProject(){ return { id:uid(), name:'', description:'', tech:'', link:'' }; }
+function newCert(){ return { id:uid(), name:'', issuer:'', date:'' }; }
+function newLanguage(){ return { id:uid(), name:'', level:'Professional' }; }
+function newCustom(){ return { id:uid(), title:'Awards', body:'' }; }
 
-        /* ---------- Completion meter ---------- */
-        function updateCompletion() {
-            let score = 0, total = 6;
-            if (document.getElementById('in-name').value.trim()) score++;
-            if (document.getElementById('in-title').value.trim()) score++;
-            if (document.getElementById('in-email').value.trim()) score++;
-            if (document.getElementById('in-summary').value.trim()) score++;
-            if (cvData.experience.length) score++;
-            if (document.getElementById('in-skills').value.trim()) score++;
-            const pct = Math.round((score / total) * 100);
-            document.getElementById('completion-fill').style.width = pct + '%';
-            document.getElementById('completion-label').textContent = pct + '% complete';
-        }
+/* ---------- persistence ---------- */
+let saveTimer=null;
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* storage unavailable */ }
+  }, 250);
+}
+function loadFromStorage(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      state = Object.assign(blankState(), parsed);
+    }
+  }catch(e){ /* ignore corrupt data */ }
+}
 
-        /* ---------- Repeater forms ---------- */
-        function renderForms() {
-            renderRepeater('exp-form-list', 'exp-empty', cvData.experience, (item, index) => `
-    <div class="repeater-header">
-      <div class="repeater-title">${escapeHtml(item.role) || 'New Position'}</div>
-      <div class="repeater-actions">
-        <button class="btn-icon" onclick="moveItem('experience', ${index}, -1)"><i class="fas fa-arrow-up"></i></button>
-        <button class="btn-icon" onclick="moveItem('experience', ${index}, 1)"><i class="fas fa-arrow-down"></i></button>
-        <button class="btn-icon danger" onclick="removeItem('experience', ${index})"><i class="fas fa-trash"></i></button>
+/* ---------- rail / section nav ---------- */
+const RAIL_SECTIONS = [
+  ['sec-personal','Info'],['sec-summary','Summary'],['sec-experience','Work'],
+  ['sec-education','School'],['sec-skills','Skills'],['sec-projects','Projects'],
+  ['sec-certs','Certs'],['sec-languages','Lang'],['sec-custom','Extra'],
+  ['sec-ats','ATS'],['sec-style','Style'],['sec-actions','Export']
+];
+function buildRail(){
+  const rail = $('#rail');
+  rail.innerHTML = RAIL_SECTIONS.map(([id,label]) =>
+    `<button class="rail-tab" data-target="${id}">${esc(label)}</button>`).join('');
+  rail.addEventListener('click', e=>{
+    const btn = e.target.closest('.rail-tab');
+    if(!btn) return;
+    const target = document.getElementById(btn.dataset.target);
+    if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+}
+function watchRailHighlight(){
+  const panel = $('#panel');
+  const tabs = $$('.rail-tab');
+  panel.addEventListener('scroll', ()=>{
+    let closestId = null, closestDist = Infinity;
+    RAIL_SECTIONS.forEach(([id])=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      const dist = Math.abs(el.getBoundingClientRect().top - panel.getBoundingClientRect().top - 10);
+      if(dist < closestDist){ closestDist = dist; closestId = id; }
+    });
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.target===closestId));
+  }, {passive:true});
+}
+
+/* ---------- generic list binding (experience/education/projects/certs/languages/custom) ---------- */
+const LIST_CONFIG = {
+  experience:{ factory:newExperience, container:'list-experience' },
+  education:{ factory:newEducation, container:'list-education' },
+  projects:{ factory:newProject, container:'list-projects' },
+  certifications:{ factory:newCert, container:'list-certifications' },
+  languages:{ factory:newLanguage, container:'list-languages' },
+  custom:{ factory:newCustom, container:'list-custom' }
+};
+
+function fieldHtml(key, entry, def){
+  const val = esc(entry[key] ?? '');
+  const id = `f-${entry.id}-${key}`;
+  if(def.type==='textarea'){
+    return `<div class="field"><label>${esc(def.label)}</label><textarea id="${id}" data-key="${key}" rows="${def.rows||3}" placeholder="${esc(def.placeholder||'')}">${val}</textarea></div>`;
+  }
+  if(def.type==='checkbox'){
+    return `<div class="checkline"><input type="checkbox" id="${id}" data-key="${key}" ${entry[key]?'checked':''}><label for="${id}" style="margin:0;">${esc(def.label)}</label></div>`;
+  }
+  if(def.type==='select'){
+    const opts = def.options.map(o=>`<option value="${esc(o)}" ${entry[key]===o?'selected':''}>${esc(o)}</option>`).join('');
+    return `<div class="field"><label>${esc(def.label)}</label><select id="${id}" data-key="${key}">${opts}</select></div>`;
+  }
+  const type = def.type || 'text';
+  return `<div class="field"><label>${esc(def.label)}</label><input type="${type}" id="${id}" data-key="${key}" value="${val}" placeholder="${esc(def.placeholder||'')}"></div>`;
+}
+
+const ENTRY_SCHEMAS = {
+  experience:[
+    {row:[['role',{label:'Role', placeholder:'Senior Product Designer'}], ['company',{label:'Company', placeholder:'Acme Corp'}]]},
+    {row:[['location',{label:'Location', placeholder:'Remote / City'}]]},
+    {row:[['start',{label:'Start', type:'month'}], ['end',{label:'End', type:'month'}]]},
+    {single:['current',{type:'checkbox', label:'I currently work here'}]},
+    {single:['bullets',{type:'textarea', label:'Achievements (one per line)', rows:4, placeholder:'Led redesign of onboarding, cutting drop-off 24%'}]}
+  ],
+  education:[
+    {row:[['school',{label:'School', placeholder:'University of KwaZulu-Natal'}], ['degree',{label:'Degree', placeholder:'BSc Computer Science'}]]},
+    {row:[['field',{label:'Field of study', placeholder:'Software Engineering'}]]},
+    {row:[['start',{label:'Start', type:'month'}], ['end',{label:'End', type:'month'}]]},
+    {single:['details',{type:'textarea', label:'Details (optional)', rows:2, placeholder:'Deans list, relevant coursework, thesis title...'}]}
+  ],
+  projects:[
+    {row:[['name',{label:'Project name', placeholder:'Bean & Brew Café Platform'}], ['link',{label:'Link', type:'url', placeholder:'github.com/you/project'}]]},
+    {single:['tech',{label:'Tech used', placeholder:'Node.js, Express, Supabase'}]},
+    {single:['description',{type:'textarea', label:'Description', rows:3, placeholder:'What it does and the impact / results.'}]}
+  ],
+  certifications:[
+    {row:[['name',{label:'Certification', placeholder:'AWS Certified Developer'}], ['issuer',{label:'Issuer', placeholder:'Amazon Web Services'}]]},
+    {row:[['date',{label:'Date', type:'month'}]]}
+  ],
+  languages:[
+    {row:[['name',{label:'Language', placeholder:'Zulu'}], ['level',{type:'select', label:'Level', options:['Native','Fluent','Professional','Conversational','Basic']}]]}
+  ],
+  custom:[
+    {row:[['title',{label:'Section title', placeholder:'Awards'}]]},
+    {single:['body',{type:'textarea', label:'Content (one line per entry)', rows:3, placeholder:'Employee of the Year, 2025 — Acme Corp'}]}
+  ]
+};
+
+function renderEntryForm(kind, entry){
+  const schema = ENTRY_SCHEMAS[kind];
+  let html = '';
+  schema.forEach(block=>{
+    if(block.row){
+      html += `<div class="row2">` + block.row.map(([k,def])=>fieldHtml(k, entry, def)).join('') + `</div>`;
+    } else if(block.single){
+      const [k,def] = block.single;
+      html += fieldHtml(k, entry, def);
+    }
+  });
+  return html;
+}
+
+function renderList(kind){
+  const cfg = LIST_CONFIG[kind];
+  const container = document.getElementById(cfg.container);
+  const items = state[kind];
+  if(items.length===0){
+    container.innerHTML = `<p class="hint" style="margin-top:-4px;">Nothing added yet.</p>`;
+    return;
+  }
+  container.innerHTML = items.map((entry, idx) => `
+    <div class="entry" draggable="true" data-kind="${kind}" data-id="${entry.id}" data-idx="${idx}">
+      <div class="entry-head">
+        <span class="drag-dots">⠿ ${esc(entryTitle(kind, entry, idx))}</span>
+        <span class="entry-actions">
+          <button class="icon-btn" data-move="up" title="Move up">↑</button>
+          <button class="icon-btn" data-move="down" title="Move down">↓</button>
+          <button class="icon-btn danger" data-remove title="Remove">✕</button>
+        </span>
       </div>
+      ${renderEntryForm(kind, entry)}
     </div>
-    <div class="input-group"><label>Job Title</label><input value="${attr(item.role)}" oninput="updateItem('experience', ${index}, 'role', this.value)"></div>
-    <div class="input-group"><label>Company</label><input value="${attr(item.company)}" oninput="updateItem('experience', ${index}, 'company', this.value)"></div>
-    <div class="input-row">
-      <div class="input-group"><label>Start</label><input placeholder="2022" value="${attr(item.start)}" oninput="updateItem('experience', ${index}, 'start', this.value)"></div>
-      <div class="input-group"><label>End</label><input placeholder="Present" value="${attr(item.end)}" oninput="updateItem('experience', ${index}, 'end', this.value)"></div>
-    </div>
-    <div class="input-group"><label>City</label><input value="${attr(item.city)}" oninput="updateItem('experience', ${index}, 'city', this.value)"></div>
-    <div class="input-group"><label>Description</label><textarea rows="3" placeholder="One achievement per line, starting with an action verb." oninput="updateItem('experience', ${index}, 'desc', this.value)">${item.desc || ''}</textarea></div>
-  `);
+  `).join('');
+}
 
-            renderRepeater('edu-form-list', 'edu-empty', cvData.education, (item, index) => `
-    <div class="repeater-header">
-      <div class="repeater-title">${escapeHtml(item.school) || 'New Education'}</div>
-      <div class="repeater-actions">
-        <button class="btn-icon" onclick="moveItem('education', ${index}, -1)"><i class="fas fa-arrow-up"></i></button>
-        <button class="btn-icon" onclick="moveItem('education', ${index}, 1)"><i class="fas fa-arrow-down"></i></button>
-        <button class="btn-icon danger" onclick="removeItem('education', ${index})"><i class="fas fa-trash"></i></button>
-      </div>
-    </div>
-    <div class="input-group"><label>School / University</label><input value="${attr(item.school)}" oninput="updateItem('education', ${index}, 'school', this.value)"></div>
-    <div class="input-group"><label>Degree / Certificate</label><input value="${attr(item.degree)}" oninput="updateItem('education', ${index}, 'degree', this.value)"></div>
-    <div class="input-group"><label>Year</label><input value="${attr(item.year)}" oninput="updateItem('education', ${index}, 'year', this.value)"></div>
-  `);
+function entryTitle(kind, entry, idx){
+  const n = idx+1;
+  if(kind==='experience') return entry.role || entry.company || `Entry ${n}`;
+  if(kind==='education') return entry.school || entry.degree || `Entry ${n}`;
+  if(kind==='projects') return entry.name || `Entry ${n}`;
+  if(kind==='certifications') return entry.name || `Entry ${n}`;
+  if(kind==='languages') return entry.name || `Entry ${n}`;
+  if(kind==='custom') return entry.title || `Section ${n}`;
+  return `Entry ${n}`;
+}
 
-            renderRepeater('proj-form-list', 'proj-empty', cvData.projects, (item, index) => `
-    <div class="repeater-header">
-      <div class="repeater-title">${escapeHtml(item.name) || 'New Project'}</div>
-      <div class="repeater-actions">
-        <button class="btn-icon" onclick="moveItem('projects', ${index}, -1)"><i class="fas fa-arrow-up"></i></button>
-        <button class="btn-icon" onclick="moveItem('projects', ${index}, 1)"><i class="fas fa-arrow-down"></i></button>
-        <button class="btn-icon danger" onclick="removeItem('projects', ${index})"><i class="fas fa-trash"></i></button>
-      </div>
-    </div>
-    <div class="input-group"><label>Project Name</label><input value="${attr(item.name)}" oninput="updateItem('projects', ${index}, 'name', this.value)"></div>
-    <div class="input-row">
-      <div class="input-group"><label>Date</label><input placeholder="2024" value="${attr(item.date)}" oninput="updateItem('projects', ${index}, 'date', this.value)"></div>
-      <div class="input-group"><label>Link (optional)</label><input placeholder="github.com/..." value="${attr(item.link)}" oninput="updateItem('projects', ${index}, 'link', this.value)"></div>
-    </div>
-    <div class="input-group"><label>Description</label><textarea rows="3" oninput="updateItem('projects', ${index}, 'desc', this.value)">${item.desc || ''}</textarea></div>
-  `);
+function bindListEvents(kind){
+  const cfg = LIST_CONFIG[kind];
+  const container = document.getElementById(cfg.container);
 
-            renderRepeater('cert-form-list', 'cert-empty', cvData.certs, (item, index) => `
-    <div class="repeater-header">
-      <div class="repeater-title">${escapeHtml(item.name) || 'New Certification'}</div>
-      <div class="repeater-actions">
-        <button class="btn-icon" onclick="moveItem('certs', ${index}, -1)"><i class="fas fa-arrow-up"></i></button>
-        <button class="btn-icon" onclick="moveItem('certs', ${index}, 1)"><i class="fas fa-arrow-down"></i></button>
-        <button class="btn-icon danger" onclick="removeItem('certs', ${index})"><i class="fas fa-trash"></i></button>
-      </div>
-    </div>
-    <div class="input-group"><label>Certification Name</label><input value="${attr(item.name)}" oninput="updateItem('certs', ${index}, 'name', this.value)"></div>
-    <div class="input-row">
-      <div class="input-group"><label>Issuer</label><input value="${attr(item.issuer)}" oninput="updateItem('certs', ${index}, 'issuer', this.value)"></div>
-      <div class="input-group"><label>Year</label><input value="${attr(item.year)}" oninput="updateItem('certs', ${index}, 'year', this.value)"></div>
-    </div>
-  `);
-        }
+  container.addEventListener('input', e=>{
+    const entryEl = e.target.closest('.entry');
+    if(!entryEl) return;
+    const id = entryEl.dataset.id;
+    const item = state[kind].find(x=>x.id===id);
+    if(!item) return;
+    const key = e.target.dataset.key;
+    if(!key) return;
+    item[key] = e.target.type==='checkbox' ? e.target.checked : e.target.value;
+    renderPreview();
+    scheduleSave();
+  });
 
-        function renderRepeater(listId, emptyId, data, tpl) {
-            const container = document.getElementById(listId);
-            container.innerHTML = '';
-            data.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'repeater-card';
-                div.innerHTML = tpl(item, index);
-                container.appendChild(div);
-            });
-            document.getElementById(emptyId).style.display = data.length ? 'none' : 'block';
-        }
+  container.addEventListener('click', e=>{
+    const entryEl = e.target.closest('.entry');
+    if(!entryEl) return;
+    const id = entryEl.dataset.id;
+    const idx = state[kind].findIndex(x=>x.id===id);
+    if(idx===-1) return;
+    if(e.target.closest('[data-remove]')){
+      state[kind].splice(idx,1);
+      renderList(kind); renderPreview(); scheduleSave();
+    } else if(e.target.closest('[data-move="up"]') && idx>0){
+      [state[kind][idx-1], state[kind][idx]] = [state[kind][idx], state[kind][idx-1]];
+      renderList(kind); renderPreview(); scheduleSave();
+    } else if(e.target.closest('[data-move="down"]') && idx<state[kind].length-1){
+      [state[kind][idx+1], state[kind][idx]] = [state[kind][idx], state[kind][idx+1]];
+      renderList(kind); renderPreview(); scheduleSave();
+    }
+  });
 
-        function attr(v) { return (v || '').replace(/"/g, '&quot;'); }
+  let dragSrcIdx = null;
+  container.addEventListener('dragstart', e=>{
+    const entryEl = e.target.closest('.entry');
+    if(!entryEl) return;
+    dragSrcIdx = Number(entryEl.dataset.idx);
+    entryEl.classList.add('dragging');
+  });
+  container.addEventListener('dragend', e=>{
+    const entryEl = e.target.closest('.entry');
+    if(entryEl) entryEl.classList.remove('dragging');
+  });
+  container.addEventListener('dragover', e=>{
+    e.preventDefault();
+    const entryEl = e.target.closest('.entry');
+    if(!entryEl) return;
+    const targetIdx = Number(entryEl.dataset.idx);
+    if(targetIdx===dragSrcIdx || dragSrcIdx===null) return;
+    const [moved] = state[kind].splice(dragSrcIdx,1);
+    state[kind].splice(targetIdx,0,moved);
+    dragSrcIdx = targetIdx;
+    renderList(kind);
+    renderPreview();
+    scheduleSave();
+  });
+}
 
-        /* ---------- CRUD ---------- */
-        function addExperience() { cvData.experience.push({ role: '', company: '', start: '', end: '', city: '', desc: '' }); renderForms(); updateCV(); setTab('experience', document.querySelector('.nav-item:nth-child(2)')); }
-        function addEducation() { cvData.education.push({ school: '', degree: '', year: '' }); renderForms(); updateCV(); }
-        function addProject() { cvData.projects.push({ name: '', date: '', link: '', desc: '' }); renderForms(); updateCV(); }
-        function addCert() { cvData.certs.push({ name: '', issuer: '', year: '' }); renderForms(); updateCV(); }
+document.addEventListener('click', e=>{
+  const addBtn = e.target.closest('[data-add]');
+  if(!addBtn) return;
+  const kind = addBtn.dataset.add;
+  state[kind].push(LIST_CONFIG[kind].factory());
+  renderList(kind);
+  renderPreview();
+  scheduleSave();
+});
 
-        function removeItem(key, i) { cvData[key].splice(i, 1); renderForms(); updateCV(); }
-        function updateItem(key, i, k, v) { cvData[key][i][k] = v; updateCV(); }
-        function moveItem(key, i, dir) {
-            const j = i + dir;
-            if (j < 0 || j >= cvData[key].length) return;
-            [cvData[key][i], cvData[key][j]] = [cvData[key][j], cvData[key][i]];
-            renderForms(); updateCV();
-        }
+/* ---------- personal + summary bindings ---------- */
+const PERSONAL_FIELDS = ['name','title','email','phone','location','website','linkedin','github'];
+function bindPersonal(){
+  PERSONAL_FIELDS.forEach(key=>{
+    const el = document.getElementById('p-'+key);
+    el.addEventListener('input', ()=>{
+      state.personal[key] = el.value;
+      renderPreview();
+      scheduleSave();
+    });
+  });
+  const summaryEl = document.getElementById('p-summary');
+  summaryEl.addEventListener('input', ()=>{
+    state.summary = summaryEl.value;
+    renderPreview();
+    scheduleSave();
+  });
+}
+function fillPersonalInputs(){
+  PERSONAL_FIELDS.forEach(key=>{
+    document.getElementById('p-'+key).value = state.personal[key] || '';
+  });
+  document.getElementById('p-summary').value = state.summary || '';
+}
 
-        /* ---------- PDF export ----------
-           The two things that most commonly make a downloaded resume PDF drift
-           from what's on screen are (1) icon webfonts like Font Awesome not
-           being rasterized correctly by html2canvas — fixed by using inline SVG
-           icons inside #cv-content instead of <i class="fa-*"> — and (2)
-           capturing the sheet before webfonts have actually finished loading,
-           which silently falls back to a system font on the first render pass.
-           We wait on document.fonts.ready and pin the capture size/zoom so
-           window size and font-loading races can't change the output. */
-        async function generatePDF() {
-            const element = document.getElementById('resume-sheet');
-            const btn = document.getElementById('download-btn');
-            const oldText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Preparing...';
+/* ---------- skills ---------- */
+function renderSkillTags(){
+  const wrap = document.getElementById('skill-tags');
+  wrap.innerHTML = state.skills.map((s,i)=>`
+    <span class="tag">${esc(s)}<button data-skill-remove="${i}" title="Remove">✕</button></span>
+  `).join('');
+}
+function bindSkills(){
+  const input = document.getElementById('skill-input');
+  input.addEventListener('keydown', e=>{
+    if(e.key==='Enter' && input.value.trim()){
+      e.preventDefault();
+      state.skills.push(input.value.trim());
+      input.value='';
+      renderSkillTags(); renderPreview(); scheduleSave();
+    }
+  });
+  document.getElementById('skill-tags').addEventListener('click', e=>{
+    const btn = e.target.closest('[data-skill-remove]');
+    if(!btn) return;
+    state.skills.splice(Number(btn.dataset.skillRemove),1);
+    renderSkillTags(); renderPreview(); scheduleSave();
+  });
+}
 
-            const oldShadow = element.style.boxShadow;
-            const oldTransform = element.style.transform;
-            element.style.boxShadow = 'none';
-            element.style.transform = 'none'; // ignore on-screen zoom for the export
+/* ---------- template / style controls ---------- */
+function bindStyleControls(){
+  $$('.swatch-tpl').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.meta.template = btn.dataset.tpl;
+      applyStyleState();
+      scheduleSave();
+    });
+  });
+  const colorInput = document.getElementById('accent-color');
+  colorInput.addEventListener('input', ()=>{
+    state.meta.accent = colorInput.value;
+    document.getElementById('accent-hex').textContent = colorInput.value;
+    applyStyleState();
+    scheduleSave();
+  });
+  $$('[data-density]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.meta.density = btn.dataset.density;
+      applyStyleState();
+      scheduleSave();
+    });
+  });
+}
+function applyStyleState(){
+  const paper = document.getElementById('paper');
+  paper.className = `paper tpl-${state.meta.template} density-${state.meta.density}`;
+  paper.style.setProperty('--resume-accent', state.meta.accent);
+  $$('.swatch-tpl').forEach(b => b.classList.toggle('active', b.dataset.tpl===state.meta.template));
+  $$('[data-density]').forEach(b => b.classList.toggle('btn-ghost', true));
+  $$('[data-density]').forEach(b => {
+    if(b.dataset.density===state.meta.density){ b.style.borderColor='var(--accent-bright)'; b.style.color='var(--accent-bright)'; }
+    else { b.style.borderColor=''; b.style.color=''; }
+  });
+  document.getElementById('accent-color').value = state.meta.accent;
+  document.getElementById('accent-hex').textContent = state.meta.accent;
+}
 
-            try {
-                if (document.fonts && document.fonts.ready) {
-                    await document.fonts.ready;
-                }
+/* ---------- preview rendering ---------- */
+function formatDate(v){
+  if(!v) return '';
+  const [y,m] = v.split('-');
+  if(!m) return v;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[Number(m)-1]} ${y}`;
+}
 
-                const name = document.getElementById('in-name').value.trim().replace(/\s+/g, '_') || 'Resume';
+function renderPreview(){
+  const p = state.personal;
+  const contactParts = [p.location, p.email, p.phone, p.website, p.linkedin, p.github].filter(Boolean);
 
-                const opt = {
-                    margin: 0,
-                    filename: `${name}_Resume.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 3,
-                        useCORS: true,
-                        windowWidth: element.scrollWidth,
-                        windowHeight: element.scrollHeight,
-                        scrollX: 0,
-                        scrollY: 0
-                    },
-                    pagebreak: { mode: ['css', 'legacy'], avoid: ['.cv-item', '.cv-section'] },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
-                };
+  let html = '';
+  html += `<div class="r-header">`;
+  html += `<h1 class="r-name">${esc(p.name) || 'Your Name'}</h1>`;
+  if(p.title) html += `<p class="r-title">${esc(p.title)}</p>`;
+  if(contactParts.length) html += `<div class="r-contact">${contactParts.map(c=>`<span>${esc(c)}</span>`).join('')}</div>`;
+  html += `</div>`;
 
-                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Generating...';
-                await html2pdf().set(opt).from(element).save();
-            } catch (err) {
-                console.error('PDF export failed', err);
-                alert('Something went wrong generating the PDF. Please try again.');
-            } finally {
-                element.style.boxShadow = oldShadow;
-                element.style.transform = oldTransform;
-                btn.disabled = false;
-                btn.innerHTML = oldText;
-            }
-        }
+  if(state.summary.trim()){
+    html += `<div class="r-section"><h2 class="r-heading">Summary</h2><p class="r-summary">${esc(state.summary)}</p></div>`;
+  }
 
-        /* ---------- JSON backup / restore ---------- */
-        function exportJSON() {
-            const data = collectData();
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const name = (data.name || 'resume').trim().replace(/\s+/g, '_');
-            a.href = url; a.download = `${name}_backup.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+  if(state.experience.length){
+    html += `<div class="r-section"><h2 class="r-heading">Experience</h2>`;
+    state.experience.forEach(ex=>{
+      const dateStr = `${formatDate(ex.start)}${ex.start||ex.end?' – ':''}${ex.current?'Present':formatDate(ex.end)}`;
+      const bullets = (ex.bullets||'').split('\n').map(b=>b.trim()).filter(Boolean);
+      html += `<div class="r-item">
+        <div class="r-item-top">
+          <div>
+            <p class="r-item-role">${esc(ex.role)||'Role'}</p>
+            <p class="r-item-org">${[esc(ex.company), esc(ex.location)].filter(Boolean).join(' · ')}</p>
+          </div>
+          <span class="r-item-date">${esc(dateStr)}</span>
+        </div>
+        ${bullets.length ? `<ul class="r-bullets">${bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
 
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                try {
-                    const d = JSON.parse(e.target.result);
-                    loadIntoForm(d);
-                    renderForms();
-                    updateCV();
-                } catch (err) {
-                    alert('That file could not be read as a resume backup.');
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
+  if(state.education.length){
+    html += `<div class="r-section"><h2 class="r-heading">Education</h2>`;
+    state.education.forEach(ed=>{
+      const dateStr = `${formatDate(ed.start)}${ed.start||ed.end?' – ':''}${formatDate(ed.end)}`;
+      html += `<div class="r-item">
+        <div class="r-item-top">
+          <div>
+            <p class="r-item-role">${esc(ed.degree)||'Degree'}${ed.field?` — ${esc(ed.field)}`:''}</p>
+            <p class="r-item-org">${esc(ed.school)}</p>
+          </div>
+          <span class="r-item-date">${esc(dateStr)}</span>
+        </div>
+        ${ed.details ? `<p class="r-bullets" style="padding-left:0;list-style:none;">${esc(ed.details)}</p>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
 
-        /* ---------- Demo & reset ---------- */
-        function loadDemo() {
-            document.getElementById('in-name').value = "Jordan Alexander";
-            document.getElementById('in-title').value = "Senior Product Designer";
-            document.getElementById('in-email').value = "jordan.alexander@design.com";
-            document.getElementById('in-phone').value = "+1 (555) 987-6543";
-            document.getElementById('in-loc').value = "San Francisco, CA";
-            document.getElementById('in-link').value = "dribbble.com/jordanA";
-            document.getElementById('in-summary').value = "Award-winning product designer with 8+ years across SaaS and fintech. Focused on translating complex user needs into accessible, elegant interfaces, and mentoring design teams as they scale.";
-            document.getElementById('in-skills').value = "UI/UX Design, Figma, Prototyping, Design Systems, HTML/CSS, Agile, User Testing";
+  if(state.skills.length){
+    html += `<div class="r-section"><h2 class="r-heading">Skills</h2><div class="r-skillrow">${state.skills.map(s=>`<span class="r-skill">${esc(s)}</span>`).join('')}</div></div>`;
+  }
 
-            cvData.experience = [
-                { role: "Lead Product Designer", company: "Stripe", start: "2020", end: "Present", city: "Remote", desc: "Spearheaded the redesign of the merchant dashboard, increasing user efficiency by 40%.\nMaintained and expanded the internal design system used by 200+ engineers.\nRan A/B tests on checkout flows, lifting conversion by 15%." },
-                { role: "UX Designer", company: "Airbnb", start: "2017", end: "2020", city: "San Francisco", desc: "Designed end-to-end experiences for the Experiences host platform.\nPartnered with PMs and engineers to ship three major feature launches." }
-            ];
-            cvData.education = [
-                { school: "Rhode Island School of Design", degree: "BFA in Industrial Design", year: "2016" }
-            ];
-            cvData.projects = [
-                { name: "Open-source design tokens kit", date: "2023", link: "github.com/jordanA/tokens", desc: "Built and published a cross-platform design-token library adopted by 400+ repos." }
-            ];
-            cvData.certs = [
-                { name: "Certified Scrum Product Owner", issuer: "Scrum Alliance", year: "2021" }
-            ];
+  if(state.projects.length){
+    html += `<div class="r-section"><h2 class="r-heading">Projects</h2>`;
+    state.projects.forEach(pr=>{
+      html += `<div class="r-item">
+        <div class="r-item-top">
+          <p class="r-item-role">${esc(pr.name)||'Project'}</p>
+          ${pr.link ? `<span class="r-item-date">${esc(pr.link)}</span>` : ''}
+        </div>
+        ${pr.tech ? `<p class="r-item-org">${esc(pr.tech)}</p>` : ''}
+        ${pr.description ? `<p class="r-bullets" style="padding-left:0;list-style:none;">${esc(pr.description)}</p>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
 
-            renderForms();
-            updateCV();
-        }
+  if(state.certifications.length){
+    html += `<div class="r-section"><h2 class="r-heading">Certifications</h2>`;
+    state.certifications.forEach(c=>{
+      html += `<div class="r-item">
+        <div class="r-item-top">
+          <p class="r-item-role">${esc(c.name)||'Certification'}${c.issuer?` — ${esc(c.issuer)}`:''}</p>
+          <span class="r-item-date">${esc(formatDate(c.date))}</span>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
 
-        function resetData() {
-            if (confirm('Clear all data? This cannot be undone.')) {
-                localStorage.removeItem(STORAGE_KEY);
-                location.reload();
-            }
-        }
-    </script>
+  if(state.languages.length){
+    html += `<div class="r-section"><h2 class="r-heading">Languages</h2><div class="r-skillrow">${state.languages.map(l=>`<span class="r-skill">${esc(l.name)}${l.level?` — ${esc(l.level)}`:''}</span>`).join('')}</div></div>`;
+  }
+
+  state.custom.forEach(sec=>{
+    if(!sec.title && !sec.body) return;
+    const lines = (sec.body||'').split('\n').map(b=>b.trim()).filter(Boolean);
+    html += `<div class="r-section"><h2 class="r-heading">${esc(sec.title)||'Section'}</h2>${lines.length?`<ul class="r-bullets">${lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`:''}</div>`;
+  });
+
+  document.getElementById('paper').innerHTML = html;
+  updateATS();
+}
+
+/* ---------- ATS score ---------- */
+const ACTION_VERBS = /^(led|build|built|manage[d]?|create[d]?|improve[d]?|increase[d]?|develop(ed)?|design(ed)?|launch(ed)?|reduce[d]?|automate[d]?|implement(ed)?|deliver(ed)?|drove|drive|optimi[sz]ed?|ship(ped)?|scale[d]?|migrate[d]?|own(ed)?|mentor(ed)?|coordinate[d]?|analy[sz]e[d]?|streamline[d]?)/i;
+
+function wordCount(){
+  const parts = [
+    state.summary,
+    ...state.experience.map(e=>e.bullets),
+    ...state.education.map(e=>e.details),
+    ...state.projects.map(p=>p.description)
+  ].join(' ');
+  return parts.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function computeATS(){
+  const checks = [
+    {ok: !!state.personal.name.trim(), pts:8, tip:'Add your full name.'},
+    {ok: !!state.personal.email.trim(), pts:8, tip:'Add an email address.'},
+    {ok: !!state.personal.phone.trim(), pts:6, tip:'Add a phone number.'},
+    {ok: !!state.personal.title.trim(), pts:6, tip:'Add a target job title or headline.'},
+    {ok: state.summary.trim().length>=80, pts:12, tip:'Write a summary of at least 80 characters.'},
+    {ok: state.experience.length>=1, pts:14, tip:'Add at least one work experience entry.'},
+    {ok: state.experience.some(e=>(e.bullets||'').split('\n').some(b=>ACTION_VERBS.test(b.trim()))), pts:14, tip:'Start bullet points with strong action verbs (Led, Built, Improved...).'},
+    {ok: state.experience.some(e=>/\d/.test(e.bullets||'')), pts:10, tip:'Quantify at least one bullet with a number or metric.'},
+    {ok: state.education.length>=1, pts:8, tip:'Add at least one education entry.'},
+    {ok: state.skills.length>=5, pts:10, tip:'List at least 5 relevant skills.'},
+    {ok: wordCount()>=150, pts:4, tip:'Add a bit more detail — aim for 150+ words total.'}
+  ];
+  let score=0, max=0, tips=[];
+  checks.forEach(c=>{ max+=c.pts; if(c.ok) score+=c.pts; else tips.push(c.tip); });
+  return { pct: Math.round(score/max*100), tips };
+}
+
+function updateATS(){
+  const { pct, tips } = computeATS();
+  const ring = document.getElementById('ats-ring');
+  const circumference = 2*Math.PI*31;
+  const offset = circumference - (pct/100)*circumference;
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = offset;
+  ring.style.stroke = pct>=75 ? 'var(--accent-bright)' : pct>=45 ? 'var(--gold)' : 'var(--danger)';
+  document.getElementById('ats-pct').textContent = pct+'%';
+  const tipsEl = document.getElementById('ats-tips');
+  tipsEl.innerHTML = tips.length ? tips.map(t=>`<li>${esc(t)}</li>`).join('') : `<li style="list-style:none;padding-left:0;">Looking solid — nice work.</li>`;
+}
+
+/* ---------- export / import / sample / clear / pdf ---------- */
+function bindActions(){
+  document.getElementById('btn-pdf').addEventListener('click', ()=> window.print());
+
+  document.getElementById('btn-export').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const filename = (state.personal.name.trim() || 'resume').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    a.href = url; a.download = `${filename}-resume.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('btn-import').addEventListener('click', ()=> document.getElementById('file-import').click());
+  document.getElementById('file-import').addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = evt=>{
+      try{
+        const parsed = JSON.parse(evt.target.result);
+        state = Object.assign(blankState(), parsed);
+        fullRender();
+        scheduleSave();
+      }catch(err){
+        alert('That file could not be read as a valid resume JSON export.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  document.getElementById('btn-sample').addEventListener('click', ()=>{
+    if(!confirm('Load sample content? This will replace your current data.')) return;
+    state = sampleState();
+    fullRender();
+    scheduleSave();
+  });
+
+  document.getElementById('btn-clear').addEventListener('click', ()=>{
+    if(!confirm('Clear everything and start from a blank resume?')) return;
+    state = blankState();
+    fullRender();
+    scheduleSave();
+  });
+}
+
+function sampleState(){
+  const s = blankState();
+  s.personal = { name:'Alex Morgan', title:'Full-Stack Developer', email:'alex.morgan@email.com', phone:'+27 71 555 0134', location:'Durban, South Africa', website:'alexmorgan.dev', linkedin:'linkedin.com/in/alexmorgan', github:'github.com/alexmorgan' };
+  s.summary = 'Full-stack developer with 5 years of experience shipping customer-facing web apps end to end, from database design to polished UI. Comfortable owning a feature from spec to production.';
+  s.experience = [
+    { id:uid(), role:'Software Developer', company:'Radiant Systems', location:'Durban, South Africa', start:'2022-03', end:'', current:true,
+      bullets:'Led rebuild of the customer portal in Node.js and React, cutting page load time by 38%\nDesigned and shipped a booking flow with email notifications used by 2,000+ customers monthly\nMentored two junior developers through code review and pairing sessions' },
+    { id:uid(), role:'Junior Developer', company:'Coastline Digital', location:'Durban, South Africa', start:'2020-01', end:'2022-02', current:false,
+      bullets:'Built and maintained REST APIs for an internal inventory system\nAutomated a manual reporting process, saving the team roughly 6 hours a week' }
+  ];
+  s.education = [
+    { id:uid(), school:'University of KwaZulu-Natal', degree:'BSc Computer Science', field:'Software Engineering', start:'2016-01', end:'2019-12', details:'' }
+  ];
+  s.skills = ['JavaScript','Node.js','React','PostgreSQL','Supabase','REST APIs','Git','Docker'];
+  s.projects = [
+    { id:uid(), name:'Café Booking Platform', description:'A table-booking and ordering platform with an AI chat assistant and automated email confirmations.', tech:'Node.js, Express, Supabase, Gemini API', link:'github.com/alexmorgan/cafe-platform' }
+  ];
+  s.certifications = [ { id:uid(), name:'AWS Certified Developer – Associate', issuer:'Amazon Web Services', date:'2023-06' } ];
+  s.languages = [ { id:uid(), name:'English', level:'Native' }, { id:uid(), name:'Zulu', level:'Fluent' } ];
+  s.custom = [ { id:uid(), title:'Awards', body:'Employee of the Quarter, Radiant Systems — Q3 2024' } ];
+  return s;
+}
+
+/* ---------- full render ---------- */
+function fullRender(){
+  fillPersonalInputs();
+  Object.keys(LIST_CONFIG).forEach(renderList);
+  renderSkillTags();
+  applyStyleState();
+  renderPreview();
+}
+
+/* ---------- init ---------- */
+function init(){
+  loadFromStorage();
+  buildRail();
+  watchRailHighlight();
+  bindPersonal();
+  bindSkills();
+  Object.keys(LIST_CONFIG).forEach(bindListEvents);
+  bindStyleControls();
+  bindActions();
+  fullRender();
+}
+init();
+
+})();
+</script>
 </body>
-
 </html>
