@@ -1391,12 +1391,12 @@
             const name = document.getElementById('in-name').value.trim().replace(/\s+/g, '_') || 'Resume';
 
             const opt = {
-                margin: 0,
-                filename: `${name}_Resume.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                pagebreak: { mode: ['css', 'legacy'] },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                 margin: 0,
+    filename: `${name}_Resume.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    pagebreak: { mode: ['css'] },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save().then(() => {
                 btn.innerHTML = oldText;
