@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ledger — Resume Studio</title>
+    <title>Ledger — Resume Builder</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root {
-            --ink: #1b2430;
-            --paper: #faf8f4;
-            --panel: #ffffff;
-            --slate: #616b7a;
-            --slate-soft: #88909b;
-            --line: #e5e1d8;
-            --accent: #b8763b;
-            --accent-dark: #8f5a28;
-            --accent-tint: #f4e6d6;
-            --success: #3f7a5c;
-            --danger: #b5473a;
-            --blue: #2b5c8a;
-            --shadow: 0 20px 40px -12px rgba(27, 36, 48, .18);
+            --ink: #1B2430;
+            --paper: #FAF8F4;
+            --panel: #FFFFFF;
+            --slate: #616B7A;
+            --slate-soft: #88909B;
+            --line: #E5E1D8;
+            --accent: #B8763B;
+            --accent-dark: #8F5A28;
+            --accent-tint: #F4E6D6;
+            --success: #3F7A5C;
+            --danger: #B5473A;
+            --shadow: 0 20px 40px -12px rgba(27, 36, 48, 0.18);
         }
 
         * {
@@ -36,210 +38,226 @@
 
         html,
         body {
-            min-height: 100%;
+            height: 100%;
         }
 
         body {
-            font-family: "Inter", sans-serif;
-            color: var(--ink);
+            font-family: 'Inter', sans-serif;
             background: var(--paper);
-        }
-
-        button,
-        input,
-        textarea {
-            font: inherit;
-        }
-
-        button {
-            cursor: pointer;
+            color: var(--ink);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         ::selection {
             background: var(--accent-tint);
         }
 
+        /* ---------- Header ---------- */
         header {
-            min-height: 68px;
+            height: 68px;
             background: var(--ink);
             color: var(--paper);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 20px;
-            padding: 12px 28px;
-            position: sticky;
-            top: 0;
+            padding: 0 28px;
+            flex-shrink: 0;
             z-index: 30;
+            gap: 20px;
         }
 
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-family: "Fraunces", serif;
-            font-size: 1.35rem;
+            font-family: 'Fraunces', serif;
             font-weight: 600;
-            white-space: nowrap;
+            font-size: 1.35rem;
+            letter-spacing: 0.2px;
+            flex-shrink: 0;
         }
 
-        .brand-mark {
+        .brand .mark {
             width: 30px;
             height: 30px;
-            display: grid;
-            place-items: center;
             border: 1.5px solid var(--accent);
             border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
             color: var(--accent);
-            font-family: "IBM Plex Mono", monospace;
-            font-size: .7rem;
         }
 
-        .brand-tag {
-            color: #8892a0;
-            font-family: "Inter", sans-serif;
-            font-size: .68rem;
+        .brand .tag {
+            font-family: 'Inter', sans-serif;
             font-weight: 500;
+            font-size: 0.68rem;
             letter-spacing: 1.5px;
             text-transform: uppercase;
+            color: #8892A0;
+            margin-left: 4px;
+            padding-top: 2px;
         }
 
         .toolbar {
             display: flex;
+            gap: 10px;
             align-items: center;
-            justify-content: flex-end;
             flex-wrap: wrap;
-            gap: 8px;
+            justify-content: flex-end;
         }
 
         .completion-pill {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 7px 11px;
-            border: 1px solid #333f4e;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: #C7CCD4;
+            padding: 6px 12px;
+            border: 1px solid #333F4E;
             border-radius: 20px;
-            color: #c7ccd4;
-            font-family: "IBM Plex Mono", monospace;
-            font-size: .72rem;
         }
 
         .completion-track {
             width: 60px;
             height: 5px;
+            background: #333F4E;
+            border-radius: 3px;
             overflow: hidden;
-            background: #333f4e;
-            border-radius: 5px;
         }
 
         .completion-fill {
-            width: 0;
             height: 100%;
             background: var(--accent);
-            transition: width .3s ease;
+            width: 0%;
+            transition: width .35s ease;
         }
 
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            border: 1px solid transparent;
+            padding: 0.55rem 1.05rem;
             border-radius: 6px;
-            padding: .58rem .9rem;
-            font-size: .8rem;
-            font-weight: 600;
-            transition: .15s ease;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all .15s;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-ghost {
-            border-color: #3a4552;
-            color: #c7ccd4;
             background: transparent;
+            color: #C7CCD4;
+            border-color: #3A4552;
         }
 
         .btn-ghost:hover {
+            background: #242F3D;
             color: #fff;
-            background: #242f3d;
         }
 
         .btn-primary {
-            color: #fff;
             background: var(--accent);
+            color: #fff;
         }
 
         .btn-primary:hover {
             background: var(--accent-dark);
         }
 
-        .btn-success {
-            color: #fff;
-            background: var(--success);
-        }
-
-        .btn-success:hover {
-            background: #326148;
+        .btn-primary:disabled {
+            opacity: .6;
+            cursor: not-allowed;
         }
 
         .privacy-badge {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 6px;
-            color: #aeb6c1;
-            font-size: .7rem;
+            font-size: 0.7rem;
+            color: #8892A0;
+            padding: 4px 10px;
+            border: 1px solid #333F4E;
+            border-radius: 20px;
+            cursor: default;
             white-space: nowrap;
         }
 
+        .privacy-badge i {
+            color: var(--success);
+        }
+
         .shared-device-banner {
+            background: #3A2F1E;
+            color: #F4E6D6;
+            font-size: 0.8rem;
+            padding: 8px 28px;
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 22px;
-            color: #664319;
-            background: #fff2d9;
-            border-bottom: 1px solid #e8d2a8;
-            font-size: .78rem;
+            flex-shrink: 0;
         }
 
-        .shared-device-banner .btn-icon {
+        .shared-device-banner i {
+            color: #E0A85C;
+        }
+
+        .shared-device-banner button {
             margin-left: auto;
+            background: none;
+            border: none;
+            color: #F4E6D6;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 4px 6px;
         }
 
+        .shared-device-banner.hidden {
+            display: none;
+        }
+
+        /* ---------- Workspace ---------- */
         .workspace {
             display: flex;
-            min-height: calc(100vh - 68px);
+            flex: 1;
+            overflow: hidden;
         }
 
         .editor-panel {
-            width: 470px;
-            flex: 0 0 470px;
-            overflow-y: auto;
+            width: 460px;
             background: var(--panel);
             border-right: 1px solid var(--line);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
 
+        /* Template picker */
         .template-picker {
             padding: 20px 22px 8px;
             border-bottom: 1px solid var(--line);
         }
 
-        .label-row {
+        .template-picker .label-row {
             display: flex;
-            align-items: baseline;
             justify-content: space-between;
+            align-items: baseline;
             margin-bottom: 12px;
         }
 
-        h2 {
-            margin-bottom: 1.25rem;
-            font-family: "Fraunces", serif;
-            font-size: 1.15rem;
-            font-weight: 600;
-        }
-
         .template-picker h2 {
-            margin-bottom: 0;
+            font-family: 'Fraunces', serif;
             font-size: 1rem;
+            font-weight: 600;
         }
 
         .swatches {
@@ -250,81 +268,83 @@
 
         .swatch {
             flex: 1;
-            padding: 10px 8px 8px;
             border: 1.5px solid var(--line);
             border-radius: 8px;
-            background: #fff;
+            padding: 10px 8px 8px;
+            cursor: pointer;
             text-align: center;
-            transition: .15s ease;
+            transition: all .15s;
+            background: #fff;
         }
 
-        .swatch:hover,
+        .swatch:hover {
+            border-color: var(--accent-tint);
+        }
+
         .swatch.active {
             border-color: var(--accent);
-        }
-
-        .swatch.active {
             background: var(--accent-tint);
         }
 
-        .swatch-preview {
+        .swatch .swatch-preview {
             height: 34px;
+            border-radius: 4px;
+            margin-bottom: 8px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 4px;
-            padding: 0 7px;
-            margin-bottom: 8px;
-            border-radius: 4px;
+            gap: 3px;
+            padding: 0 6px;
         }
 
-        .swatch-line-one,
-        .swatch-line-two {
+        .swatch-preview .l1 {
             height: 4px;
-            border-radius: 2px;
-        }
-
-        .swatch-line-one {
             width: 60%;
+            border-radius: 1px;
         }
 
-        .swatch-line-two {
+        .swatch-preview .l2 {
+            height: 3px;
             width: 80%;
+            border-radius: 1px;
             opacity: .5;
         }
 
         .swatch span {
+            font-size: 0.7rem;
+            font-weight: 500;
             color: var(--slate);
-            font-size: .7rem;
-            font-weight: 600;
         }
 
+        /* Nav tabs */
         .editor-nav {
             display: flex;
             flex-wrap: wrap;
+            padding: 0 14px;
+            border-bottom: 1px solid var(--line);
             position: sticky;
             top: 0;
-            z-index: 10;
-            padding: 0 14px;
             background: var(--panel);
-            border-bottom: 1px solid var(--line);
+            z-index: 10;
         }
 
         .nav-item {
-            padding: 14px 10px;
-            border-bottom: 2px solid transparent;
+            padding: 14px 12px;
+            font-size: 0.82rem;
+            font-weight: 500;
             color: var(--slate-soft);
-            font-size: .77rem;
-            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: color .15s;
             white-space: nowrap;
         }
 
-        .nav-item:hover,
-        .nav-item.active {
+        .nav-item:hover {
             color: var(--accent);
         }
 
         .nav-item.active {
+            color: var(--accent);
             border-bottom-color: var(--accent);
         }
 
@@ -334,7 +354,7 @@
 
         .form-section {
             display: none;
-            animation: fadeIn .25s ease;
+            animation: fadeIn .3s ease;
         }
 
         .form-section.active {
@@ -353,15 +373,22 @@
             }
         }
 
+        h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1.4rem;
+        }
+
         .section-hint {
-            margin: -1rem 0 1.2rem;
+            font-size: 0.8rem;
             color: var(--slate-soft);
-            font-size: .8rem;
-            line-height: 1.5;
+            margin-top: -1rem;
+            margin-bottom: 1.2rem;
         }
 
         .input-group {
-            margin-bottom: 1.05rem;
+            margin-bottom: 1.1rem;
         }
 
         .input-row {
@@ -369,235 +396,226 @@
             gap: 10px;
         }
 
-        .input-row > .input-group {
+        .input-row .input-group {
             flex: 1;
         }
 
         label {
             display: block;
-            margin-bottom: .4rem;
+            font-size: 0.78rem;
+            font-weight: 600;
             color: var(--slate);
-            font-size: .76rem;
-            font-weight: 700;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.2px;
         }
 
         input,
-        textarea {
+        textarea,
+        select {
             width: 100%;
-            padding: 10px 11px;
+            padding: 9px 11px;
             border: 1px solid var(--line);
             border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
             color: var(--ink);
             background: #fff;
-            font-size: .88rem;
-            transition: .15s ease;
-        }
-
-        textarea {
-            min-height: 90px;
-            resize: vertical;
-            line-height: 1.5;
+            transition: border-color .15s, box-shadow .15s;
         }
 
         input:focus,
-        textarea:focus {
+        textarea:focus,
+        select:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 3px var(--accent-tint);
         }
 
+        textarea {
+            resize: vertical;
+        }
+
         ::placeholder {
-            color: #b5bac3;
+            color: #B5BAC3;
         }
 
         .repeater-card {
-            position: relative;
-            margin-bottom: 14px;
-            padding: 16px;
+            background: #FCFBF9;
             border: 1px solid var(--line);
             border-radius: 8px;
-            background: #fcfbf9;
+            padding: 16px;
+            margin-bottom: 14px;
+            position: relative;
         }
 
         .repeater-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            align-items: center;
             margin-bottom: 12px;
         }
 
         .repeater-title {
-            overflow: hidden;
-            color: var(--ink);
-            font-family: "Fraunces", serif;
-            font-size: .9rem;
             font-weight: 600;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            font-size: 0.88rem;
+            color: var(--ink);
+            font-family: 'Fraunces', serif;
         }
 
         .repeater-actions {
             display: flex;
-            flex-shrink: 0;
             gap: 2px;
+            align-items: center;
         }
 
         .btn-icon {
-            padding: 5px 7px;
-            border: 0;
-            border-radius: 4px;
+            background: none;
+            border: none;
             color: var(--slate-soft);
-            background: transparent;
-            font-size: .78rem;
+            cursor: pointer;
+            padding: 5px 7px;
+            border-radius: 4px;
+            font-size: 0.8rem;
         }
 
         .btn-icon:hover {
+            background: #EFECE5;
             color: var(--ink);
-            background: #efece5;
         }
 
         .btn-icon.danger:hover {
+            background: #FBE8E5;
             color: var(--danger);
-            background: #fbe8e5;
         }
 
         .btn-add-block {
             width: 100%;
             padding: 12px;
-            border: 1.5px dashed #c9b08a;
-            border-radius: 8px;
+            border: 1.5px dashed #C9B08A;
             color: var(--accent-dark);
             background: var(--accent-tint);
-            font-size: .83rem;
-            font-weight: 600;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all .15s;
         }
 
         .btn-add-block:hover {
-            background: #eed9bc;
+            background: #EED9BC;
         }
 
         .empty-note {
-            margin-bottom: 14px;
+            font-size: 0.82rem;
+            color: var(--slate-soft);
+            text-align: center;
             padding: 18px 10px;
             border: 1px dashed var(--line);
             border-radius: 8px;
-            color: var(--slate-soft);
-            font-size: .8rem;
-            text-align: center;
+            margin-bottom: 14px;
         }
 
-        .ats-card {
-            padding: 16px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: #fcfbf9;
-        }
-
-        .ats-card h3 {
-            margin-bottom: 7px;
-            font-family: "Fraunces", serif;
-            font-size: 1rem;
-        }
-
-        .ats-card p {
-            margin-bottom: 12px;
-            color: var(--slate);
-            font-size: .77rem;
-            line-height: 1.5;
-        }
-
-        .ats-results {
-            display: none;
-            margin-top: 14px;
-            padding: 13px;
-            border-radius: 7px;
-            background: #fff;
-        }
-
-        .ats-results.visible {
-            display: block;
-        }
-
-        .ats-score {
-            margin-bottom: 8px;
-            color: var(--success);
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .ats-results p {
-            margin: 5px 0;
-        }
-
-        .keyword-list {
-            color: var(--slate);
-            font-size: .75rem;
-            line-height: 1.6;
-        }
-
+        /* ---------- Preview ---------- */
         .preview-panel {
             flex: 1;
-            overflow: auto;
+            background: #3A414D;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 44px;
-            background: #3a414d;
+        }
+
+        .zoom-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.1);
+            padding: 7px 14px;
+            border-radius: 20px;
+            color: #C7CCD4;
+            font-size: 0.78rem;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .zoom-toolbar button {
+            background: none;
+            border: none;
+            color: #C7CCD4;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 2px 6px;
+        }
+
+        .zoom-toolbar button:hover {
+            color: #fff;
+        }
+
+        .page-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .page-indicator .fa-file-lines {
+            color: var(--accent);
         }
 
         .resume-sheet {
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto 40px;
-            padding: 16mm 15mm;
             background: #fff;
+            width: 210mm;
+            margin: 0 auto 40px;
+            min-height: 297mm;
+            padding: 16mm 15mm;
             box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
             color: #222;
+            height: auto;
+            transform-origin: top center;
+            transition: transform .15s ease;
         }
 
+        /* Base CV element styling — modified per template class below */
         #cv-content {
-            font-family: "Inter", sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         .cv-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 25px;
-            margin-bottom: 22px;
             padding-bottom: 18px;
-            border-bottom: 2px solid var(--tpl-accent, var(--accent));
-        }
-
-        .cv-identity {
-            min-width: 0;
+            margin-bottom: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--tpl-accent, #B8763B);
         }
 
         .cv-identity h1 {
-            color: #181f29;
-            font-family: "Fraunces", serif;
+            font-family: 'Fraunces', serif;
             font-size: 2.15rem;
             font-weight: 700;
+            margin: 0;
             line-height: 1.15;
-            overflow-wrap: anywhere;
+            color: #181F29;
         }
 
-        .cv-role {
-            margin-top: 5px;
-            color: var(--tpl-accent, var(--accent));
-            font-family: "IBM Plex Mono", monospace;
-            font-size: 1rem;
+        .cv-identity .cv-role {
+            font-size: 1.02rem;
+            color: var(--tpl-accent, #B8763B);
             font-weight: 500;
-            overflow-wrap: anywhere;
+            margin-top: 5px;
+            font-family: 'IBM Plex Mono', monospace;
         }
 
         .cv-contact {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #4b5563;
             display: flex;
             flex-direction: column;
-            flex-shrink: 0;
             gap: 4px;
-            color: #4b5563;
-            font-size: .78rem;
-            text-align: right;
         }
 
         .cv-contact span {
@@ -605,43 +623,47 @@
             align-items: center;
             justify-content: flex-end;
             gap: 6px;
-            overflow-wrap: anywhere;
         }
 
-        .cv-contact i {
-            color: var(--tpl-accent, var(--accent));
-            font-size: .72rem;
+        .cv-contact svg {
+            width: 11px;
+            height: 11px;
+            fill: none;
+            stroke: var(--tpl-accent, #B8763B);
+            stroke-width: 2;
+            flex-shrink: 0;
         }
 
         .cv-section {
             margin-bottom: 22px;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .cv-section-title {
+            font-family: 'Fraunces', serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            color: #181F29;
+            margin-bottom: 11px;
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 11px;
-            color: #181f29;
-            font-family: "Fraunces", serif;
-            font-size: .84rem;
-            font-weight: 600;
-            letter-spacing: 1.4px;
-            text-transform: uppercase;
         }
 
         .cv-section-title::after {
+            content: '';
             flex: 1;
             height: 1px;
-            content: "";
-            background: #e5e1d8;
+            background: #E5E1D8;
         }
 
         .cv-summary {
-            color: #374151;
-            font-size: .88rem;
+            font-size: 0.9rem;
             line-height: 1.6;
-            white-space: pre-line;
+            color: #374151;
         }
 
         .skill-tags {
@@ -651,13 +673,13 @@
         }
 
         .skill-tag {
+            background: #F5F3EE;
             padding: 4px 10px;
-            border: 1px solid #e5e1d8;
             border-radius: 4px;
-            color: #374151;
-            background: #f5f3ee;
-            font-size: .78rem;
+            font-size: 0.8rem;
             font-weight: 500;
+            color: #374151;
+            border: 1px solid #E5E1D8;
         }
 
         .cv-item {
@@ -668,41 +690,41 @@
 
         .cv-item-head {
             display: flex;
-            align-items: baseline;
             justify-content: space-between;
-            gap: 12px;
+            align-items: baseline;
             margin-bottom: 3px;
+            gap: 10px;
         }
 
         .cv-role-title {
-            color: #181f29;
-            font-size: .94rem;
             font-weight: 700;
+            font-size: 0.95rem;
+            color: #181F29;
         }
 
         .cv-date {
+            font-size: 0.78rem;
             color: #6b7280;
-            font-family: "IBM Plex Mono", monospace;
-            font-size: .75rem;
+            font-family: 'IBM Plex Mono', monospace;
             white-space: nowrap;
         }
 
         .cv-company {
-            margin-bottom: 5px;
-            color: var(--tpl-accent, var(--accent));
-            font-size: .84rem;
             font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--tpl-accent, #B8763B);
+            margin-bottom: 5px;
         }
 
         .cv-desc {
+            font-size: 0.86rem;
+            line-height: 1.55;
             color: #374151;
-            font-size: .84rem;
-            line-height: 1.5;
         }
 
         .cv-desc ul {
-            margin: 4px 0 0 17px;
-            padding: 0;
+            margin-left: 16px;
+            margin-top: 3px;
         }
 
         .cv-desc li {
@@ -710,53 +732,55 @@
         }
 
         .cv-link-line {
-            margin: 2px 0 4px;
-            color: var(--tpl-accent, var(--accent));
-            font-family: "IBM Plex Mono", monospace;
-            font-size: .75rem;
-            overflow-wrap: anywhere;
+            font-size: 0.78rem;
+            color: var(--tpl-accent, #B8763B);
+            margin-top: 2px;
+            font-family: 'IBM Plex Mono', monospace;
         }
 
+        /* ---- Template: Ledger (default — editorial, brass rule, serif-forward) ---- */
         .tpl-ledger {
-            --tpl-accent: #b8763b;
+            --tpl-accent: #B8763B;
         }
 
         .tpl-ledger .cv-identity h1 {
-            letter-spacing: -.5px;
             text-transform: uppercase;
+            letter-spacing: -0.5px;
         }
 
+        /* ---- Template: Foundry (bold, blueprint / grid, mono accents, left rule) ---- */
         .tpl-foundry {
-            --tpl-accent: #2b5c8a;
+            --tpl-accent: #2B5C8A;
         }
 
         .tpl-foundry .cv-header {
-            align-items: center;
-            padding-bottom: 0;
-            padding-left: 18px;
-            border-bottom: 0;
+            border-bottom: none;
             border-left: 5px solid var(--tpl-accent);
+            padding-left: 18px;
+            padding-bottom: 0;
+            align-items: center;
         }
 
         .tpl-foundry .cv-identity h1 {
-            font-family: "Inter", sans-serif;
-            font-size: 2rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
             text-transform: none;
+            font-size: 2rem;
         }
 
-        .tpl-foundry .cv-role {
-            font-family: "Inter", sans-serif;
-            font-size: .8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
+        .tpl-foundry .cv-identity .cv-role {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
             text-transform: uppercase;
+            font-size: 0.82rem;
+            letter-spacing: 1px;
         }
 
         .tpl-foundry .cv-section-title {
+            font-family: 'Inter', sans-serif;
+            background: #F0F4F8;
             padding: 6px 10px;
             border-radius: 3px;
-            background: #f0f4f8;
-            font-family: "Inter", sans-serif;
         }
 
         .tpl-foundry .cv-section-title::after {
@@ -764,22 +788,23 @@
         }
 
         .tpl-foundry .skill-tag {
-            border-color: #cfe0ec;
+            background: #EAF1F7;
+            border-color: #CFE0EC;
+            color: #1F3A52;
             border-radius: 3px;
-            color: #1f3a52;
-            background: #eaf1f7;
         }
 
+        /* ---- Template: Folio (minimal, centered, classic serif) ---- */
         .tpl-folio {
-            --tpl-accent: #3f7a5c;
+            --tpl-accent: #3F7A5C;
         }
 
         .tpl-folio .cv-header {
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid #d8d3c7;
             text-align: center;
+            border-bottom: 1px solid #D8D3C7;
+            gap: 8px;
         }
 
         .tpl-folio .cv-identity h1 {
@@ -808,29 +833,17 @@
             display: none;
         }
 
-        @media (max-width: 1250px) {
-            header {
-                align-items: flex-start;
+        /* Responsive */
+        @media (max-width:1100px) {
+            .workspace {
                 flex-direction: column;
-            }
-
-            .toolbar {
-                justify-content: flex-start;
-            }
-
-            .workspace {
-                min-height: auto;
-            }
-        }
-
-        @media (max-width: 1100px) {
-            .workspace {
-                display: block;
+                overflow-y: auto;
             }
 
             .editor-panel {
                 width: 100%;
-                border-right: 0;
+                height: auto;
+                border-right: none;
                 border-bottom: 1px solid var(--line);
             }
 
@@ -841,489 +854,287 @@
             .resume-sheet {
                 width: 100%;
                 min-height: auto;
-                padding: 35px 28px;
             }
-        }
 
-        @media (max-width: 640px) {
             header {
-                padding: 14px 16px;
-            }
-
-            .brand-tag,
-            .privacy-badge {
-                display: none;
-            }
-
-            .toolbar {
-                width: 100%;
-            }
-
-            .toolbar .btn {
-                flex: 1;
-            }
-
-            .completion-pill {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .shared-device-banner {
-                align-items: flex-start;
-                padding: 10px 16px;
-            }
-
-            .editor-forms {
-                padding: 22px 16px 45px;
-            }
-
-            .template-picker {
-                padding-right: 16px;
-                padding-left: 16px;
-            }
-
-            .input-row {
-                display: block;
-            }
-
-            .cv-header {
-                display: block;
-            }
-
-            .cv-contact {
-                margin-top: 15px;
-                text-align: left;
-            }
-
-            .cv-contact span {
-                justify-content: flex-start;
-            }
-
-            .cv-item-head {
-                display: block;
-            }
-
-            .cv-date {
-                display: block;
-                margin-top: 3px;
-            }
-
-            .resume-sheet {
-                padding: 28px 20px;
-            }
-
-            .cv-identity h1 {
-                font-size: 1.75rem;
-            }
-        }
-
-        @media print {
-            @page {
-                size: A4;
-                margin: 0;
-            }
-
-            body {
-                background: #fff;
-            }
-
-            header,
-            .shared-device-banner,
-            .editor-panel {
-                display: none !important;
-            }
-
-            .workspace,
-            .preview-panel {
-                display: block;
-                min-height: 0;
-                padding: 0;
-                overflow: visible;
-                background: #fff;
-            }
-
-            .resume-sheet {
-                width: 210mm;
-                min-height: 297mm;
-                margin: 0;
-                box-shadow: none;
+                flex-wrap: wrap;
+                height: auto;
+                padding: 12px 16px;
             }
         }
     </style>
 </head>
 
 <body>
+
     <header>
         <div class="brand">
-            <div class="brand-mark">Ld</div>
-            <span>Ledger</span>
-            <span class="brand-tag">Resume Studio</span>
+            <div class="mark">Ld</div>
+            Ledger <span class="tag">Resume Studio</span>
         </div>
-
         <div class="toolbar">
             <div class="completion-pill">
-                <i class="fas fa-chart-line" style="color: var(--accent);"></i>
+                <i class="fas fa-signature" style="color:var(--accent)"></i>
                 <span id="completion-label">0% complete</span>
                 <div class="completion-track">
-                    <div id="completion-fill" class="completion-fill"></div>
+                    <div class="completion-fill" id="completion-fill"></div>
                 </div>
             </div>
-
-            <button class="btn btn-ghost" type="button" onclick="openImport()">
-                <i class="fas fa-upload"></i>
-                Import
-            </button>
-
-            <button class="btn btn-ghost" type="button" onclick="exportJSON()">
-                <i class="fas fa-file-export"></i>
-                Backup
-            </button>
-
-            <button class="btn btn-ghost" type="button" onclick="exportText()">
-                <i class="fas fa-file-lines"></i>
-                TXT
-            </button>
-
-            <button class="btn btn-ghost" type="button" onclick="loadDemo()">
-                <i class="fas fa-wand-magic-sparkles"></i>
-                Demo
-            </button>
-
-            <button class="btn btn-ghost" type="button" onclick="resetData()">
-                <i class="fas fa-trash"></i>
-                Reset
-            </button>
-
-            <button class="btn btn-primary" id="pdf-button" type="button" onclick="generatePDF()">
-                <i class="fas fa-download"></i>
-                PDF
-            </button>
-
-            <input
-                id="import-file"
-                type="file"
-                accept=".json,application/json"
-                hidden
-                onchange="importData(event)"
-            >
-
-            <div class="privacy-badge" title="Your draft is saved in this browser only.">
-                <i class="fas fa-lock"></i>
-                Local only
+            <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()"><i
+                    class="fas fa-upload"></i> Import</button>
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+            <button class="btn btn-ghost" onclick="exportJSON()"><i class="fas fa-file-export"></i> Backup</button>
+            <button class="btn btn-ghost" onclick="loadDemo()"><i class="fas fa-magic"></i> Demo</button>
+            <button class="btn btn-ghost" onclick="resetData()"><i class="fas fa-trash-alt"></i> Reset</button>
+            <button class="btn btn-primary" id="download-btn" onclick="generatePDF()"><i class="fas fa-download"></i> Download
+                PDF</button>
+            <div class="privacy-badge" id="privacy-badge"
+                title="Everything you type is saved only in this browser, on this device. Nothing is uploaded to a server, and no other visitor can ever see it.">
+                <i class="fas fa-lock"></i> Private to this browser
             </div>
         </div>
     </header>
 
     <div class="shared-device-banner" id="shared-device-banner">
         <i class="fas fa-triangle-exclamation"></i>
-        <span>
-            Using a shared computer? Your draft is saved in this browser.
-            Click <strong>Reset</strong> before leaving.
-        </span>
-        <button class="btn-icon" type="button" onclick="dismissBanner()" title="Dismiss">
-            <i class="fas fa-xmark"></i>
-        </button>
+        <span>On a shared or public computer? Your draft is saved to <strong>this browser only</strong> — click
+            <strong>Reset</strong> before you walk away so the next person can't see it.</span>
+        <button class="btn-icon" onclick="dismissBanner()" title="Dismiss"><i class="fas fa-xmark"></i></button>
     </div>
 
-    <main class="workspace">
-        <aside class="editor-panel">
-            <section class="template-picker">
+    <div class="workspace">
+        <div class="editor-panel">
+
+            <div class="template-picker">
                 <div class="label-row">
                     <h2>Template</h2>
                 </div>
-
                 <div class="swatches">
-                    <button class="swatch active" type="button" data-template="tpl-ledger" onclick="setTemplate('tpl-ledger', this)">
-                        <div class="swatch-preview" style="background:#fbf6ee;">
-                            <div class="swatch-line-one" style="background:#b8763b;"></div>
-                            <div class="swatch-line-two" style="background:#8f5a28;"></div>
+                    <div class="swatch active" data-tpl="tpl-ledger" onclick="setTemplate('tpl-ledger', this)">
+                        <div class="swatch-preview" style="background:#FBF6EE;">
+                            <div class="l1" style="background:#B8763B;"></div>
+                            <div class="l2" style="background:#8F5A28;"></div>
                         </div>
                         <span>Ledger</span>
-                    </button>
-
-                    <button class="swatch" type="button" data-template="tpl-foundry" onclick="setTemplate('tpl-foundry', this)">
-                        <div class="swatch-preview" style="background:#eef3f8;">
-                            <div class="swatch-line-one" style="background:#2b5c8a;"></div>
-                            <div class="swatch-line-two" style="background:#2b5c8a;"></div>
+                    </div>
+                    <div class="swatch" data-tpl="tpl-foundry" onclick="setTemplate('tpl-foundry', this)">
+                        <div class="swatch-preview" style="background:#EEF3F8;">
+                            <div class="l1" style="background:#2B5C8A;"></div>
+                            <div class="l2" style="background:#2B5C8A;"></div>
                         </div>
                         <span>Foundry</span>
-                    </button>
-
-                    <button class="swatch" type="button" data-template="tpl-folio" onclick="setTemplate('tpl-folio', this)">
-                        <div class="swatch-preview" style="background:#f1f5f2;">
-                            <div class="swatch-line-one" style="width:60%;margin:auto;background:#3f7a5c;"></div>
-                            <div class="swatch-line-two" style="width:50%;margin:auto;background:#3f7a5c;"></div>
+                    </div>
+                    <div class="swatch" data-tpl="tpl-folio" onclick="setTemplate('tpl-folio', this)">
+                        <div class="swatch-preview" style="background:#F1F5F2;">
+                            <div class="l1" style="background:#3F7A5C;margin:0 auto;"></div>
+                            <div class="l2" style="background:#3F7A5C;margin:0 auto;width:50%;"></div>
                         </div>
                         <span>Folio</span>
-                    </button>
+                    </div>
                 </div>
-            </section>
+            </div>
 
-            <nav class="editor-nav" aria-label="Resume sections">
-                <button class="nav-item active" type="button" onclick="setTab('basics', this)">Profile</button>
-                <button class="nav-item" type="button" onclick="setTab('experience', this)">Experience</button>
-                <button class="nav-item" type="button" onclick="setTab('education', this)">Education</button>
-                <button class="nav-item" type="button" onclick="setTab('projects', this)">Projects</button>
-                <button class="nav-item" type="button" onclick="setTab('skills', this)">Skills</button>
-                <button class="nav-item" type="button" onclick="setTab('certs', this)">Certifications</button>
-                <button class="nav-item" type="button" onclick="setTab('ats', this)">ATS Check</button>
+            <nav class="editor-nav">
+                <div class="nav-item active" onclick="setTab('basics', this)">Profile</div>
+                <div class="nav-item" onclick="setTab('experience', this)">Experience</div>
+                <div class="nav-item" onclick="setTab('education', this)">Education</div>
+                <div class="nav-item" onclick="setTab('projects', this)">Projects</div>
+                <div class="nav-item" onclick="setTab('skills', this)">Skills</div>
+                <div class="nav-item" onclick="setTab('certs', this)">Certifications</div>
             </nav>
 
             <div class="editor-forms">
-                <section id="basics" class="form-section active">
+
+                <div id="basics" class="form-section active">
                     <h2>Personal Information</h2>
-
-                    <div class="input-group">
-                        <label for="in-name">Full Name</label>
-                        <input id="in-name" type="text" placeholder="e.g. Sarah Chen" oninput="updateCV()">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="in-title">Target Job Title</label>
-                        <input id="in-title" type="text" placeholder="e.g. Senior UX Designer" oninput="updateCV()">
-                    </div>
-
+                    <div class="input-group"><label>Full Name</label><input type="text" id="in-name"
+                            placeholder="e.g. Sarah Chen" oninput="updateCV()"></div>
+                    <div class="input-group"><label>Target Job Title</label><input type="text" id="in-title"
+                            placeholder="e.g. Senior UX Designer" oninput="updateCV()"></div>
                     <div class="input-row">
-                        <div class="input-group">
-                            <label for="in-email">Email</label>
-                            <input id="in-email" type="email" placeholder="sarah@email.com" oninput="updateCV()">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="in-phone">Phone</label>
-                            <input id="in-phone" type="tel" placeholder="+27 00 000 0000" oninput="updateCV()">
-                        </div>
+                        <div class="input-group"><label>Email</label><input type="email" id="in-email"
+                                placeholder="sarah@email.com" oninput="updateCV()"></div>
+                        <div class="input-group"><label>Phone</label><input type="tel" id="in-phone"
+                                placeholder="+1 555 000 0000" oninput="updateCV()"></div>
                     </div>
-
                     <div class="input-row">
-                        <div class="input-group">
-                            <label for="in-loc">Location</label>
-                            <input id="in-loc" type="text" placeholder="Cape Town, South Africa" oninput="updateCV()">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="in-link">Portfolio / LinkedIn</label>
-                            <input id="in-link" type="text" placeholder="linkedin.com/in/yourname" oninput="updateCV()">
-                        </div>
+                        <div class="input-group"><label>Location</label><input type="text" id="in-loc"
+                                placeholder="New York, NY" oninput="updateCV()"></div>
+                        <div class="input-group"><label>Portfolio / LinkedIn</label><input type="text" id="in-link"
+                                placeholder="linkedin.com/in/sarahchen" oninput="updateCV()"></div>
                     </div>
-
                     <div class="input-group">
-                        <label for="in-summary">Professional Summary</label>
-                        <textarea
-                            id="in-summary"
-                            rows="6"
-                            placeholder="Write 2–3 sentences about your expertise, results, and career direction."
-                            oninput="updateCV()"
-                        ></textarea>
+                        <label>Professional Summary</label>
+                        <textarea id="in-summary" rows="6"
+                            placeholder="2–3 sentences on your expertise, focus area, and what you're looking for next."
+                            oninput="updateCV()"></textarea>
                     </div>
-                </section>
+                </div>
 
-                <section id="experience" class="form-section">
+                <div id="experience" class="form-section">
                     <h2>Work Experience</h2>
-                    <p class="section-hint">Add your most recent position first. Use the arrows to reorder entries.</p>
-
+                    <p class="section-hint">Most recent role first. Use the arrows to reorder.</p>
                     <div id="exp-form-list"></div>
-                    <div id="exp-empty" class="empty-note">No experience added yet.</div>
+                    <div id="exp-empty" class="empty-note">No experience added yet — add your most recent role first.
+                    </div>
+                    <button class="btn btn-add-block" onclick="addExperience()"><i class="fas fa-plus"></i> Add
+                        Position</button>
+                </div>
 
-                    <button class="btn btn-add-block" type="button" onclick="addExperience()">
-                        <i class="fas fa-plus"></i>
-                        Add Position
-                    </button>
-                </section>
-
-                <section id="education" class="form-section">
+                <div id="education" class="form-section">
                     <h2>Education</h2>
-
                     <div id="edu-form-list"></div>
                     <div id="edu-empty" class="empty-note">No education added yet.</div>
+                    <button class="btn btn-add-block" onclick="addEducation()"><i class="fas fa-plus"></i> Add
+                        Education</button>
+                </div>
 
-                    <button class="btn btn-add-block" type="button" onclick="addEducation()">
-                        <i class="fas fa-plus"></i>
-                        Add Education
-                    </button>
-                </section>
-
-                <section id="projects" class="form-section">
+                <div id="projects" class="form-section">
                     <h2>Projects</h2>
-                    <p class="section-hint">Useful for students, developers, designers, and career changers.</p>
-
+                    <p class="section-hint">Optional — great for students, career changers, or portfolio work.</p>
                     <div id="proj-form-list"></div>
                     <div id="proj-empty" class="empty-note">No projects added yet.</div>
+                    <button class="btn btn-add-block" onclick="addProject()"><i class="fas fa-plus"></i> Add
+                        Project</button>
+                </div>
 
-                    <button class="btn btn-add-block" type="button" onclick="addProject()">
-                        <i class="fas fa-plus"></i>
-                        Add Project
-                    </button>
-                </section>
-
-                <section id="skills" class="form-section">
+                <div id="skills" class="form-section">
                     <h2>Skills & Tools</h2>
-                    <p class="section-hint">Separate each skill with a comma.</p>
+                    <p class="section-hint">Separate items with commas.</p>
+                    <textarea id="in-skills" rows="6" placeholder="Figma, Adobe CC, HTML, CSS, User Research..."
+                        oninput="updateCV()"></textarea>
+                </div>
 
-                    <textarea
-                        id="in-skills"
-                        rows="7"
-                        placeholder="Figma, JavaScript, Project Management, SQL..."
-                        oninput="updateCV()"
-                    ></textarea>
-                </section>
-
-                <section id="certs" class="form-section">
+                <div id="certs" class="form-section">
                     <h2>Certifications</h2>
-
                     <div id="cert-form-list"></div>
                     <div id="cert-empty" class="empty-note">No certifications added yet.</div>
+                    <button class="btn btn-add-block" onclick="addCert()"><i class="fas fa-plus"></i> Add
+                        Certification</button>
+                </div>
 
-                    <button class="btn btn-add-block" type="button" onclick="addCert()">
-                        <i class="fas fa-plus"></i>
-                        Add Certification
-                    </button>
-                </section>
-
-                <section id="ats" class="form-section">
-                    <h2>ATS Keyword Check</h2>
-
-                    <div class="ats-card">
-                        <h3>Compare your resume to a job description</h3>
-                        <p>
-                            Paste the job advert below. Ledger will compare important words
-                            against your resume and show a basic match score.
-                        </p>
-
-                        <textarea
-                            id="job-description"
-                            rows="11"
-                            placeholder="Paste the job description here..."
-                        ></textarea>
-
-                        <button class="btn btn-success" type="button" onclick="runATSCheck()">
-                            <i class="fas fa-magnifying-glass-chart"></i>
-                            Check Keywords
-                        </button>
-
-                        <div id="ats-results" class="ats-results"></div>
-                    </div>
-                </section>
             </div>
-        </aside>
+        </div>
 
-        <section class="preview-panel" aria-label="Resume preview">
-            <article id="resume-sheet" class="resume-sheet tpl-ledger">
+        <div class="preview-panel">
+            <div class="zoom-toolbar">
+                <div class="page-indicator"><i class="fas fa-file-lines"></i> <span id="page-count-label">1 page</span></div>
+                <span style="color:#4A5568">·</span>
+                <button onclick="adjustZoom(-0.1)" title="Zoom out"><i class="fas fa-magnifying-glass-minus"></i></button>
+                <span id="zoom-label">100%</span>
+                <button onclick="adjustZoom(0.1)" title="Zoom in"><i class="fas fa-magnifying-glass-plus"></i></button>
+            </div>
+            <div id="resume-sheet" class="resume-sheet tpl-ledger">
                 <div id="cv-content">
-                    <header class="cv-header">
+                    <div class="cv-header">
                         <div class="cv-identity">
-                            <h1 id="out-name">YOUR NAME</h1>
-                            <div id="out-title" class="cv-role">Professional Title</div>
+                            <h1 id="out-name">Your Name</h1>
+                            <div class="cv-role" id="out-title">Professional Title</div>
                         </div>
-
                         <div class="cv-contact">
                             <span id="out-email-box">
-                                <i class="fas fa-envelope"></i>
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l9 6 9-6M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg>
                                 <span id="out-email"></span>
                             </span>
-
                             <span id="out-phone-box">
-                                <i class="fas fa-phone"></i>
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1z"/></svg>
                                 <span id="out-phone"></span>
                             </span>
-
                             <span id="out-loc-box">
-                                <i class="fas fa-location-dot"></i>
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.1-7-11.5A7 7 0 0112 2a7 7 0 017 7.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
                                 <span id="out-loc"></span>
                             </span>
-
                             <span id="out-link-box">
-                                <i class="fas fa-link"></i>
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14a5 5 0 007.1 0l3-3a5 5 0 00-7.1-7.1l-1.5 1.4M14 10a5 5 0 00-7.1 0l-3 3a5 5 0 007.1 7.1l1.4-1.4"/></svg>
                                 <span id="out-link"></span>
                             </span>
                         </div>
-                    </header>
+                    </div>
 
-                    <section id="section-summary" class="cv-section">
+                    <div class="cv-section" id="section-summary">
                         <div class="cv-section-title">Professional Profile</div>
-                        <div id="out-summary" class="cv-summary">
-                            Your professional profile summary will appear here as you type.
-                        </div>
-                    </section>
+                        <div class="cv-summary" id="out-summary">Your professional profile summary will appear here as
+                            you type.</div>
+                    </div>
 
-                    <section id="section-skills" class="cv-section">
+                    <div class="cv-section" id="section-skills">
                         <div class="cv-section-title">Skills</div>
-                        <div id="out-skills" class="skill-tags"></div>
-                    </section>
+                        <div class="skill-tags" id="out-skills"></div>
+                    </div>
 
-                    <section id="section-exp" class="cv-section">
+                    <div class="cv-section" id="section-exp">
                         <div class="cv-section-title">Experience</div>
                         <div id="out-exp-list"></div>
-                    </section>
+                    </div>
 
-                    <section id="section-proj" class="cv-section">
+                    <div class="cv-section" id="section-proj" style="display:none;">
                         <div class="cv-section-title">Projects</div>
                         <div id="out-proj-list"></div>
-                    </section>
+                    </div>
 
-                    <section id="section-edu" class="cv-section">
+                    <div class="cv-section" id="section-edu">
                         <div class="cv-section-title">Education</div>
                         <div id="out-edu-list"></div>
-                    </section>
+                    </div>
 
-                    <section id="section-cert" class="cv-section">
+                    <div class="cv-section" id="section-cert" style="display:none;">
                         <div class="cv-section-title">Certifications</div>
                         <div id="out-cert-list"></div>
-                    </section>
+                    </div>
                 </div>
-            </article>
-        </section>
-    </main>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const STORAGE_KEY = "ledger_resume_v2";
+        const STORAGE_KEY = 'ledger_resume_v1';
+        const A4_HEIGHT_MM = 297;
+        let zoomLevel = 1;
 
-        let cvData = {
-            experience: [],
-            education: [],
-            projects: [],
-            certs: [],
-            template: "tpl-ledger"
-        };
+        let cvData = { experience: [], education: [], projects: [], certs: [], template: 'tpl-ledger' };
 
-        const $ = id => document.getElementById(id);
-
-        window.addEventListener("load", init);
-        window.addEventListener("beforeunload", saveData);
-
-        function init() {
+        window.onload = function () {
             const saved = localStorage.getItem(STORAGE_KEY);
-
             if (saved) {
                 try {
-                    loadIntoForm(JSON.parse(saved));
-                } catch (error) {
-                    console.error("Could not load saved resume:", error);
-                }
+                    const d = JSON.parse(saved);
+                    loadIntoForm(d);
+                } catch (e) { console.error('Could not load saved resume', e); }
             }
-
+            if (localStorage.getItem('ledger_banner_dismissed') === '1') {
+                document.getElementById('shared-device-banner').classList.add('hidden');
+            }
             renderForms();
             updateCV();
-        }
+        };
 
-        function getValue(id) {
-            return $(id).value.trim();
-        }
-
-        function setValue(id, value) {
-            if ($(id)) $(id).value = value || "";
+        function loadIntoForm(d) {
+            document.getElementById('in-name').value = d.name || '';
+            document.getElementById('in-title').value = d.title || '';
+            document.getElementById('in-email').value = d.email || '';
+            document.getElementById('in-phone').value = d.phone || '';
+            document.getElementById('in-loc').value = d.loc || '';
+            document.getElementById('in-link').value = d.link || '';
+            document.getElementById('in-summary').value = d.summary || '';
+            document.getElementById('in-skills').value = d.skills || '';
+            cvData.experience = d.experience || [];
+            cvData.education = d.education || [];
+            cvData.projects = d.projects || [];
+            cvData.certs = d.certs || [];
+            cvData.template = d.template || 'tpl-ledger';
+            applyTemplateClass(cvData.template);
         }
 
         function collectData() {
             return {
-                name: getValue("in-name"),
-                title: getValue("in-title"),
-                email: getValue("in-email"),
-                phone: getValue("in-phone"),
-                loc: getValue("in-loc"),
-                link: getValue("in-link"),
-                summary: getValue("in-summary"),
-                skills: getValue("in-skills"),
+                name: document.getElementById('in-name').value,
+                title: document.getElementById('in-title').value,
+                email: document.getElementById('in-email').value,
+                phone: document.getElementById('in-phone').value,
+                loc: document.getElementById('in-loc').value,
+                link: document.getElementById('in-link').value,
+                summary: document.getElementById('in-summary').value,
+                skills: document.getElementById('in-skills').value,
                 experience: cvData.experience,
                 education: cvData.education,
                 projects: cvData.projects,
@@ -1333,865 +1144,389 @@
         }
 
         function saveData() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(collectData()));
-            } catch (error) {
-                console.error("Could not save resume:", error);
-            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(collectData()));
         }
 
-        function loadIntoForm(data) {
-            setValue("in-name", data.name);
-            setValue("in-title", data.title);
-            setValue("in-email", data.email);
-            setValue("in-phone", data.phone);
-            setValue("in-loc", data.loc);
-            setValue("in-link", data.link);
-            setValue("in-summary", data.summary);
-            setValue("in-skills", data.skills);
-
-            cvData.experience = Array.isArray(data.experience) ? data.experience : [];
-            cvData.education = Array.isArray(data.education) ? data.education : [];
-            cvData.projects = Array.isArray(data.projects) ? data.projects : [];
-            cvData.certs = Array.isArray(data.certs) ? data.certs : [];
-            cvData.template = ["tpl-ledger", "tpl-foundry", "tpl-folio"].includes(data.template)
-                ? data.template
-                : "tpl-ledger";
-
-            applyTemplateClass(cvData.template);
+        function dismissBanner() {
+            document.getElementById('shared-device-banner').classList.add('hidden');
+            localStorage.setItem('ledger_banner_dismissed', '1');
         }
 
-        function setTab(id, button) {
-            document.querySelectorAll(".form-section").forEach(section => {
-                section.classList.remove("active");
-            });
-
-            document.querySelectorAll(".nav-item").forEach(item => {
-                item.classList.remove("active");
-            });
-
-            $(id).classList.add("active");
-            button.classList.add("active");
+        /* ---------- Tabs & templates ---------- */
+        function setTab(id, el) {
+            document.querySelectorAll('.form-section').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
         }
 
-        function setTemplate(template, button) {
-            cvData.template = template;
-            applyTemplateClass(template);
-
-            document.querySelectorAll(".swatch").forEach(item => {
-                item.classList.remove("active");
-            });
-
-            button.classList.add("active");
+        function setTemplate(tpl, el) {
+            cvData.template = tpl;
+            applyTemplateClass(tpl);
+            document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+            el.classList.add('active');
             saveData();
         }
-
-        function applyTemplateClass(template) {
-            const sheet = $("resume-sheet");
-
-            sheet.classList.remove("tpl-ledger", "tpl-foundry", "tpl-folio");
-            sheet.classList.add(template);
-
-            document.querySelectorAll(".swatch").forEach(item => {
-                item.classList.toggle(
-                    "active",
-                    item.dataset.template === template
-                );
-            });
+        function applyTemplateClass(tpl) {
+            const sheet = document.getElementById('resume-sheet');
+            sheet.classList.remove('tpl-ledger', 'tpl-foundry', 'tpl-folio');
+            sheet.classList.add(tpl);
+            document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.tpl === tpl));
         }
 
+        /* ---------- Zoom (view-only — never affects the exported PDF) ---------- */
+        function adjustZoom(delta) {
+            zoomLevel = Math.min(1.3, Math.max(0.5, +(zoomLevel + delta).toFixed(2)));
+            document.getElementById('resume-sheet').style.transform = `scale(${zoomLevel})`;
+            document.getElementById('zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
+        }
+
+        /* ---------- Rendering ---------- */
         function updateCV() {
-            const name = getValue("in-name");
-            const title = getValue("in-title");
-            const email = getValue("in-email");
-            const phone = getValue("in-phone");
-            const loc = getValue("in-loc");
-            const link = getValue("in-link");
-            const summary = getValue("in-summary");
-            const skills = getValue("in-skills");
+            const setText = (id, val, def) => document.getElementById(id).textContent = val || def;
+            const toggleBox = (boxId, val) => document.getElementById(boxId).style.display = val ? 'flex' : 'none';
 
-            $("out-name").textContent = name || "YOUR NAME";
-            $("out-title").textContent = title || "Professional Title";
-            $("out-email").textContent = email;
-            $("out-phone").textContent = phone;
-            $("out-loc").textContent = loc;
-            $("out-link").textContent = link;
+            setText('out-name', document.getElementById('in-name').value, 'YOUR NAME');
+            setText('out-title', document.getElementById('in-title').value, 'Professional Title');
 
-            toggleDisplay("out-email-box", email);
-            toggleDisplay("out-phone-box", phone);
-            toggleDisplay("out-loc-box", loc);
-            toggleDisplay("out-link-box", link);
+            const email = document.getElementById('in-email').value;
+            setText('out-email', email, ''); toggleBox('out-email-box', email);
+            const phone = document.getElementById('in-phone').value;
+            setText('out-phone', phone, ''); toggleBox('out-phone-box', phone);
+            const loc = document.getElementById('in-loc').value;
+            setText('out-loc', loc, ''); toggleBox('out-loc-box', loc);
+            const link = document.getElementById('in-link').value;
+            setText('out-link', link, ''); toggleBox('out-link-box', link);
 
-            $("out-summary").textContent =
-                summary || "Your professional profile summary will appear here as you type.";
+            const summary = document.getElementById('in-summary').value;
+            setText('out-summary', summary, 'Your professional profile summary will appear here as you type.');
+            document.getElementById('section-summary').style.display = summary ? 'block' : (summary === '' ? 'block' : 'none');
 
-            toggleDisplay("section-summary", true);
-            renderSkills(skills);
+            const skillInput = document.getElementById('in-skills').value;
+            const skillContainer = document.getElementById('out-skills');
+            skillContainer.innerHTML = '';
+            skillInput.split(',').forEach(s => {
+                if (s.trim()) {
+                    const tag = document.createElement('span');
+                    tag.className = 'skill-tag';
+                    tag.textContent = s.trim();
+                    skillContainer.appendChild(tag);
+                }
+            });
+            document.getElementById('section-skills').style.display = skillInput.trim() ? 'block' : 'none';
 
-            renderPreviewList(
-                "out-exp-list",
-                cvData.experience,
-                experienceTemplate
-            );
+            renderPreviewList('out-exp-list', cvData.experience, item => `
+    <div class="cv-item">
+      <div class="cv-item-head">
+        <div class="cv-role-title">${escapeHtml(item.role) || 'Job Title'}</div>
+        <div class="cv-date">${escapeHtml(item.start || '')} – ${escapeHtml(item.end || '')}</div>
+      </div>
+      <div class="cv-company">${escapeHtml(item.company) || 'Company Name'}${item.city ? ' | ' + escapeHtml(item.city) : ''}</div>
+      <div class="cv-desc">${item.desc ? escapeHtml(item.desc).replace(/\n/g, '<br>') : ''}</div>
+    </div>
+  `);
+            document.getElementById('section-exp').style.display = cvData.experience.length ? 'block' : 'none';
 
-            renderPreviewList(
-                "out-edu-list",
-                cvData.education,
-                educationTemplate
-            );
+            renderPreviewList('out-edu-list', cvData.education, item => `
+    <div class="cv-item">
+      <div class="cv-item-head">
+        <div class="cv-role-title">${escapeHtml(item.school) || 'University'}</div>
+        <div class="cv-date">${escapeHtml(item.year || '')}</div>
+      </div>
+      <div class="cv-company">${escapeHtml(item.degree) || 'Degree'}</div>
+    </div>
+  `);
+            document.getElementById('section-edu').style.display = cvData.education.length ? 'block' : 'none';
 
-            renderPreviewList(
-                "out-proj-list",
-                cvData.projects,
-                projectTemplate
-            );
+            renderPreviewList('out-proj-list', cvData.projects, item => `
+    <div class="cv-item">
+      <div class="cv-item-head">
+        <div class="cv-role-title">${escapeHtml(item.name) || 'Project Name'}</div>
+        <div class="cv-date">${escapeHtml(item.date || '')}</div>
+      </div>
+      ${item.link ? `<div class="cv-link-line">${escapeHtml(item.link)}</div>` : ''}
+      <div class="cv-desc">${item.desc ? escapeHtml(item.desc).replace(/\n/g, '<br>') : ''}</div>
+    </div>
+  `);
+            document.getElementById('section-proj').style.display = cvData.projects.length ? 'block' : 'none';
 
-            renderPreviewList(
-                "out-cert-list",
-                cvData.certs,
-                certificationTemplate
-            );
-
-            toggleDisplay("section-exp", cvData.experience.length > 0);
-            toggleDisplay("section-edu", cvData.education.length > 0);
-            toggleDisplay("section-proj", cvData.projects.length > 0);
-            toggleDisplay("section-cert", cvData.certs.length > 0);
+            renderPreviewList('out-cert-list', cvData.certs, item => `
+    <div class="cv-item">
+      <div class="cv-item-head">
+        <div class="cv-role-title">${escapeHtml(item.name) || 'Certification'}</div>
+        <div class="cv-date">${escapeHtml(item.year || '')}</div>
+      </div>
+      <div class="cv-company">${escapeHtml(item.issuer) || ''}</div>
+    </div>
+  `);
+            document.getElementById('section-cert').style.display = cvData.certs.length ? 'block' : 'none';
 
             updateCompletion();
+            updatePageCount();
             saveData();
         }
 
-        function toggleDisplay(id, visible) {
-            $(id).style.display = visible ? "" : "none";
+        function renderPreviewList(id, data, tpl) {
+            const container = document.getElementById(id);
+            container.innerHTML = '';
+            data.forEach(item => container.innerHTML += tpl(item));
         }
 
-        function renderSkills(value) {
-            const container = $("out-skills");
-            container.innerHTML = "";
-
-            value
-                .split(",")
-                .map(skill => skill.trim())
-                .filter(Boolean)
-                .forEach(skill => {
-                    const tag = document.createElement("span");
-                    tag.className = "skill-tag";
-                    tag.textContent = skill;
-                    container.appendChild(tag);
-                });
-
-            toggleDisplay("section-skills", Boolean(value));
-        }
-
-        function renderPreviewList(id, data, template) {
-            $(id).innerHTML = data.map(template).join("");
-        }
-
-        function escapeHtml(value) {
-            const div = document.createElement("div");
-            div.textContent = String(value || "");
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
             return div.innerHTML;
         }
 
-        function escapeAttribute(value) {
-            return String(value || "")
-                .replace(/&/g, "&amp;")
-                .replace(/"/g, "&quot;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/'/g, "&#039;");
+        /* ---------- Page count estimate ----------
+           Mirrors what html2pdf/jsPDF will do: an A4 sheet is 297mm tall, so
+           however many 297mm bands the rendered sheet spans is how many pages
+           the download will have. Showing this live keeps the editor honest
+           about what you'll actually get. */
+        function updatePageCount() {
+            const sheet = document.getElementById('resume-sheet');
+            const mmPerPx = 25.4 / 96; // CSS px -> mm at 96dpi
+            const heightMM = sheet.scrollHeight * mmPerPx;
+            const pages = Math.max(1, Math.ceil(heightMM / A4_HEIGHT_MM - 0.02));
+            const label = document.getElementById('page-count-label');
+            label.textContent = pages === 1 ? '1 page' : pages + ' pages';
         }
 
-        function formatDescription(value) {
-            const lines = String(value || "")
-                .split(/\r?\n/)
-                .map(line => line.trim())
-                .filter(Boolean);
-
-            if (!lines.length) return "";
-
-            return `
-                <ul>
-                    ${lines.map(line => `<li>${escapeHtml(line)}</li>`).join("")}
-                </ul>
-            `;
-        }
-
-        function experienceTemplate(item) {
-            const dates = [item.start, item.end]
-                .filter(Boolean)
-                .map(escapeHtml)
-                .join(" – ");
-
-            const company = [
-                item.company,
-                item.city ? `| ${item.city}` : ""
-            ].filter(Boolean).join(" ");
-
-            return `
-                <div class="cv-item">
-                    <div class="cv-item-head">
-                        <div class="cv-role-title">
-                            ${escapeHtml(item.role) || "Job Title"}
-                        </div>
-                        <div class="cv-date">${dates}</div>
-                    </div>
-
-                    <div class="cv-company">
-                        ${escapeHtml(company) || "Company Name"}
-                    </div>
-
-                    <div class="cv-desc">
-                        ${formatDescription(item.desc)}
-                    </div>
-                </div>
-            `;
-        }
-
-        function educationTemplate(item) {
-            return `
-                <div class="cv-item">
-                    <div class="cv-item-head">
-                        <div class="cv-role-title">
-                            ${escapeHtml(item.school) || "University"}
-                        </div>
-                        <div class="cv-date">${escapeHtml(item.year)}</div>
-                    </div>
-
-                    <div class="cv-company">
-                        ${escapeHtml(item.degree) || "Degree"}
-                    </div>
-                </div>
-            `;
-        }
-
-        function projectTemplate(item) {
-            return `
-                <div class="cv-item">
-                    <div class="cv-item-head">
-                        <div class="cv-role-title">
-                            ${escapeHtml(item.name) || "Project Name"}
-                        </div>
-                        <div class="cv-date">${escapeHtml(item.date)}</div>
-                    </div>
-
-                    ${
-                        item.link
-                            ? `<div class="cv-link-line">${escapeHtml(item.link)}</div>`
-                            : ""
-                    }
-
-                    <div class="cv-desc">
-                        ${formatDescription(item.desc)}
-                    </div>
-                </div>
-            `;
-        }
-
-        function certificationTemplate(item) {
-            return `
-                <div class="cv-item">
-                    <div class="cv-item-head">
-                        <div class="cv-role-title">
-                            ${escapeHtml(item.name) || "Certification"}
-                        </div>
-                        <div class="cv-date">${escapeHtml(item.year)}</div>
-                    </div>
-
-                    <div class="cv-company">
-                        ${escapeHtml(item.issuer)}
-                    </div>
-                </div>
-            `;
-        }
-
+        /* ---------- Completion meter ---------- */
         function updateCompletion() {
-            const checks = [
-                getValue("in-name"),
-                getValue("in-title"),
-                getValue("in-email"),
-                getValue("in-phone"),
-                getValue("in-loc"),
-                getValue("in-summary"),
-                getValue("in-skills"),
-                cvData.experience.length > 0,
-                cvData.education.length > 0,
-                cvData.projects.length > 0
-            ];
-
-            const score = checks.filter(Boolean).length;
-            const percentage = Math.round((score / checks.length) * 100);
-
-            $("completion-fill").style.width = `${percentage}%`;
-            $("completion-label").textContent = `${percentage}% complete`;
+            let score = 0, total = 6;
+            if (document.getElementById('in-name').value.trim()) score++;
+            if (document.getElementById('in-title').value.trim()) score++;
+            if (document.getElementById('in-email').value.trim()) score++;
+            if (document.getElementById('in-summary').value.trim()) score++;
+            if (cvData.experience.length) score++;
+            if (document.getElementById('in-skills').value.trim()) score++;
+            const pct = Math.round((score / total) * 100);
+            document.getElementById('completion-fill').style.width = pct + '%';
+            document.getElementById('completion-label').textContent = pct + '% complete';
         }
 
+        /* ---------- Repeater forms ---------- */
         function renderForms() {
-            renderRepeater(
-                "exp-form-list",
-                "exp-empty",
-                cvData.experience,
-                experienceFormTemplate
-            );
+            renderRepeater('exp-form-list', 'exp-empty', cvData.experience, (item, index) => `
+    <div class="repeater-header">
+      <div class="repeater-title">${escapeHtml(item.role) || 'New Position'}</div>
+      <div class="repeater-actions">
+        <button class="btn-icon" onclick="moveItem('experience', ${index}, -1)"><i class="fas fa-arrow-up"></i></button>
+        <button class="btn-icon" onclick="moveItem('experience', ${index}, 1)"><i class="fas fa-arrow-down"></i></button>
+        <button class="btn-icon danger" onclick="removeItem('experience', ${index})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="input-group"><label>Job Title</label><input value="${attr(item.role)}" oninput="updateItem('experience', ${index}, 'role', this.value)"></div>
+    <div class="input-group"><label>Company</label><input value="${attr(item.company)}" oninput="updateItem('experience', ${index}, 'company', this.value)"></div>
+    <div class="input-row">
+      <div class="input-group"><label>Start</label><input placeholder="2022" value="${attr(item.start)}" oninput="updateItem('experience', ${index}, 'start', this.value)"></div>
+      <div class="input-group"><label>End</label><input placeholder="Present" value="${attr(item.end)}" oninput="updateItem('experience', ${index}, 'end', this.value)"></div>
+    </div>
+    <div class="input-group"><label>City</label><input value="${attr(item.city)}" oninput="updateItem('experience', ${index}, 'city', this.value)"></div>
+    <div class="input-group"><label>Description</label><textarea rows="3" placeholder="One achievement per line, starting with an action verb." oninput="updateItem('experience', ${index}, 'desc', this.value)">${item.desc || ''}</textarea></div>
+  `);
 
-            renderRepeater(
-                "edu-form-list",
-                "edu-empty",
-                cvData.education,
-                educationFormTemplate
-            );
+            renderRepeater('edu-form-list', 'edu-empty', cvData.education, (item, index) => `
+    <div class="repeater-header">
+      <div class="repeater-title">${escapeHtml(item.school) || 'New Education'}</div>
+      <div class="repeater-actions">
+        <button class="btn-icon" onclick="moveItem('education', ${index}, -1)"><i class="fas fa-arrow-up"></i></button>
+        <button class="btn-icon" onclick="moveItem('education', ${index}, 1)"><i class="fas fa-arrow-down"></i></button>
+        <button class="btn-icon danger" onclick="removeItem('education', ${index})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="input-group"><label>School / University</label><input value="${attr(item.school)}" oninput="updateItem('education', ${index}, 'school', this.value)"></div>
+    <div class="input-group"><label>Degree / Certificate</label><input value="${attr(item.degree)}" oninput="updateItem('education', ${index}, 'degree', this.value)"></div>
+    <div class="input-group"><label>Year</label><input value="${attr(item.year)}" oninput="updateItem('education', ${index}, 'year', this.value)"></div>
+  `);
 
-            renderRepeater(
-                "proj-form-list",
-                "proj-empty",
-                cvData.projects,
-                projectFormTemplate
-            );
+            renderRepeater('proj-form-list', 'proj-empty', cvData.projects, (item, index) => `
+    <div class="repeater-header">
+      <div class="repeater-title">${escapeHtml(item.name) || 'New Project'}</div>
+      <div class="repeater-actions">
+        <button class="btn-icon" onclick="moveItem('projects', ${index}, -1)"><i class="fas fa-arrow-up"></i></button>
+        <button class="btn-icon" onclick="moveItem('projects', ${index}, 1)"><i class="fas fa-arrow-down"></i></button>
+        <button class="btn-icon danger" onclick="removeItem('projects', ${index})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="input-group"><label>Project Name</label><input value="${attr(item.name)}" oninput="updateItem('projects', ${index}, 'name', this.value)"></div>
+    <div class="input-row">
+      <div class="input-group"><label>Date</label><input placeholder="2024" value="${attr(item.date)}" oninput="updateItem('projects', ${index}, 'date', this.value)"></div>
+      <div class="input-group"><label>Link (optional)</label><input placeholder="github.com/..." value="${attr(item.link)}" oninput="updateItem('projects', ${index}, 'link', this.value)"></div>
+    </div>
+    <div class="input-group"><label>Description</label><textarea rows="3" oninput="updateItem('projects', ${index}, 'desc', this.value)">${item.desc || ''}</textarea></div>
+  `);
 
-            renderRepeater(
-                "cert-form-list",
-                "cert-empty",
-                cvData.certs,
-                certificationFormTemplate
-            );
+            renderRepeater('cert-form-list', 'cert-empty', cvData.certs, (item, index) => `
+    <div class="repeater-header">
+      <div class="repeater-title">${escapeHtml(item.name) || 'New Certification'}</div>
+      <div class="repeater-actions">
+        <button class="btn-icon" onclick="moveItem('certs', ${index}, -1)"><i class="fas fa-arrow-up"></i></button>
+        <button class="btn-icon" onclick="moveItem('certs', ${index}, 1)"><i class="fas fa-arrow-down"></i></button>
+        <button class="btn-icon danger" onclick="removeItem('certs', ${index})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="input-group"><label>Certification Name</label><input value="${attr(item.name)}" oninput="updateItem('certs', ${index}, 'name', this.value)"></div>
+    <div class="input-row">
+      <div class="input-group"><label>Issuer</label><input value="${attr(item.issuer)}" oninput="updateItem('certs', ${index}, 'issuer', this.value)"></div>
+      <div class="input-group"><label>Year</label><input value="${attr(item.year)}" oninput="updateItem('certs', ${index}, 'year', this.value)"></div>
+    </div>
+  `);
         }
 
-        function renderRepeater(listId, emptyId, data, template) {
-            const container = $(listId);
-            container.innerHTML = "";
-
+        function renderRepeater(listId, emptyId, data, tpl) {
+            const container = document.getElementById(listId);
+            container.innerHTML = '';
             data.forEach((item, index) => {
-                const card = document.createElement("div");
-                card.className = "repeater-card";
-                card.innerHTML = template(item, index);
-                container.appendChild(card);
+                const div = document.createElement('div');
+                div.className = 'repeater-card';
+                div.innerHTML = tpl(item, index);
+                container.appendChild(div);
             });
-
-            $(emptyId).style.display = data.length ? "none" : "block";
+            document.getElementById(emptyId).style.display = data.length ? 'none' : 'block';
         }
 
-        function formHeader(title, key, index) {
-            return `
-                <div class="repeater-header">
-                    <div class="repeater-title">${escapeHtml(title)}</div>
+        function attr(v) { return (v || '').replace(/"/g, '&quot;'); }
 
-                    <div class="repeater-actions">
-                        <button class="btn-icon" type="button" title="Move up"
-                            onclick="moveItem('${key}', ${index}, -1)">
-                            <i class="fas fa-arrow-up"></i>
-                        </button>
+        /* ---------- CRUD ---------- */
+        function addExperience() { cvData.experience.push({ role: '', company: '', start: '', end: '', city: '', desc: '' }); renderForms(); updateCV(); setTab('experience', document.querySelector('.nav-item:nth-child(2)')); }
+        function addEducation() { cvData.education.push({ school: '', degree: '', year: '' }); renderForms(); updateCV(); }
+        function addProject() { cvData.projects.push({ name: '', date: '', link: '', desc: '' }); renderForms(); updateCV(); }
+        function addCert() { cvData.certs.push({ name: '', issuer: '', year: '' }); renderForms(); updateCV(); }
 
-                        <button class="btn-icon" type="button" title="Move down"
-                            onclick="moveItem('${key}', ${index}, 1)">
-                            <i class="fas fa-arrow-down"></i>
-                        </button>
-
-                        <button class="btn-icon danger" type="button" title="Delete"
-                            onclick="removeItem('${key}', ${index})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
+        function removeItem(key, i) { cvData[key].splice(i, 1); renderForms(); updateCV(); }
+        function updateItem(key, i, k, v) { cvData[key][i][k] = v; updateCV(); }
+        function moveItem(key, i, dir) {
+            const j = i + dir;
+            if (j < 0 || j >= cvData[key].length) return;
+            [cvData[key][i], cvData[key][j]] = [cvData[key][j], cvData[key][i]];
+            renderForms(); updateCV();
         }
 
-        function experienceFormTemplate(item, index) {
-            return `
-                ${formHeader(item.role || "New Position", "experience", index)}
+        /* ---------- PDF export ----------
+           The two things that most commonly make a downloaded resume PDF drift
+           from what's on screen are (1) icon webfonts like Font Awesome not
+           being rasterized correctly by html2canvas — fixed by using inline SVG
+           icons inside #cv-content instead of <i class="fa-*"> — and (2)
+           capturing the sheet before webfonts have actually finished loading,
+           which silently falls back to a system font on the first render pass.
+           We wait on document.fonts.ready and pin the capture size/zoom so
+           window size and font-loading races can't change the output. */
+        async function generatePDF() {
+            const element = document.getElementById('resume-sheet');
+            const btn = document.getElementById('download-btn');
+            const oldText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Preparing...';
 
-                <div class="input-group">
-                    <label>Job Title</label>
-                    <input
-                        value="${escapeAttribute(item.role)}"
-                        oninput="updateItem('experience', ${index}, 'role', this.value)"
-                    >
-                </div>
+            const oldShadow = element.style.boxShadow;
+            const oldTransform = element.style.transform;
+            element.style.boxShadow = 'none';
+            element.style.transform = 'none'; // ignore on-screen zoom for the export
 
-                <div class="input-group">
-                    <label>Company</label>
-                    <input
-                        value="${escapeAttribute(item.company)}"
-                        oninput="updateItem('experience', ${index}, 'company', this.value)"
-                    >
-                </div>
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
 
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Start</label>
-                        <input
-                            placeholder="2022"
-                            value="${escapeAttribute(item.start)}"
-                            oninput="updateItem('experience', ${index}, 'start', this.value)"
-                        >
-                    </div>
+                const name = document.getElementById('in-name').value.trim().replace(/\s+/g, '_') || 'Resume';
 
-                    <div class="input-group">
-                        <label>End</label>
-                        <input
-                            placeholder="Present"
-                            value="${escapeAttribute(item.end)}"
-                            oninput="updateItem('experience', ${index}, 'end', this.value)"
-                        >
-                    </div>
-                </div>
+                const opt = {
+                    margin: 0,
+                    filename: `${name}_Resume.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 3,
+                        useCORS: true,
+                        windowWidth: element.scrollWidth,
+                        windowHeight: element.scrollHeight,
+                        scrollX: 0,
+                        scrollY: 0
+                    },
+                    pagebreak: { mode: ['css', 'legacy'], avoid: ['.cv-item', '.cv-section'] },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+                };
 
-                <div class="input-group">
-                    <label>City</label>
-                    <input
-                        value="${escapeAttribute(item.city)}"
-                        oninput="updateItem('experience', ${index}, 'city', this.value)"
-                    >
-                </div>
-
-                <div class="input-group">
-                    <label>Description</label>
-                    <textarea
-                        rows="4"
-                        placeholder="One achievement per line, starting with an action verb."
-                        oninput="updateItem('experience', ${index}, 'desc', this.value)"
-                    >${escapeHtml(item.desc)}</textarea>
-                </div>
-            `;
-        }
-
-        function educationFormTemplate(item, index) {
-            return `
-                ${formHeader(item.school || "New Education", "education", index)}
-
-                <div class="input-group">
-                    <label>School / University</label>
-                    <input
-                        value="${escapeAttribute(item.school)}"
-                        oninput="updateItem('education', ${index}, 'school', this.value)"
-                    >
-                </div>
-
-                <div class="input-group">
-                    <label>Degree / Certificate</label>
-                    <input
-                        value="${escapeAttribute(item.degree)}"
-                        oninput="updateItem('education', ${index}, 'degree', this.value)"
-                    >
-                </div>
-
-                <div class="input-group">
-                    <label>Year</label>
-                    <input
-                        value="${escapeAttribute(item.year)}"
-                        oninput="updateItem('education', ${index}, 'year', this.value)"
-                    >
-                </div>
-            `;
-        }
-
-        function projectFormTemplate(item, index) {
-            return `
-                ${formHeader(item.name || "New Project", "projects", index)}
-
-                <div class="input-group">
-                    <label>Project Name</label>
-                    <input
-                        value="${escapeAttribute(item.name)}"
-                        oninput="updateItem('projects', ${index}, 'name', this.value)"
-                    >
-                </div>
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Date</label>
-                        <input
-                            placeholder="2024"
-                            value="${escapeAttribute(item.date)}"
-                            oninput="updateItem('projects', ${index}, 'date', this.value)"
-                        >
-                    </div>
-
-                    <div class="input-group">
-                        <label>Link</label>
-                        <input
-                            placeholder="github.com/..."
-                            value="${escapeAttribute(item.link)}"
-                            oninput="updateItem('projects', ${index}, 'link', this.value)"
-                        >
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label>Description</label>
-                    <textarea
-                        rows="4"
-                        placeholder="Describe what you built and the result."
-                        oninput="updateItem('projects', ${index}, 'desc', this.value)"
-                    >${escapeHtml(item.desc)}</textarea>
-                </div>
-            `;
-        }
-
-        function certificationFormTemplate(item, index) {
-            return `
-                ${formHeader(item.name || "New Certification", "certs", index)}
-
-                <div class="input-group">
-                    <label>Certification Name</label>
-                    <input
-                        value="${escapeAttribute(item.name)}"
-                        oninput="updateItem('certs', ${index}, 'name', this.value)"
-                    >
-                </div>
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Issuer</label>
-                        <input
-                            value="${escapeAttribute(item.issuer)}"
-                            oninput="updateItem('certs', ${index}, 'issuer', this.value)"
-                        >
-                    </div>
-
-                    <div class="input-group">
-                        <label>Year</label>
-                        <input
-                            value="${escapeAttribute(item.year)}"
-                            oninput="updateItem('certs', ${index}, 'year', this.value)"
-                        >
-                    </div>
-                </div>
-            `;
-        }
-
-        function addExperience() {
-            cvData.experience.push({
-                role: "",
-                company: "",
-                start: "",
-                end: "",
-                city: "",
-                desc: ""
-            });
-
-            renderForms();
-            updateCV();
-            activateTabById("experience");
-        }
-
-        function addEducation() {
-            cvData.education.push({
-                school: "",
-                degree: "",
-                year: ""
-            });
-
-            renderForms();
-            updateCV();
-            activateTabById("education");
-        }
-
-        function addProject() {
-            cvData.projects.push({
-                name: "",
-                date: "",
-                link: "",
-                desc: ""
-            });
-
-            renderForms();
-            updateCV();
-            activateTabById("projects");
-        }
-
-        function addCert() {
-            cvData.certs.push({
-                name: "",
-                issuer: "",
-                year: ""
-            });
-
-            renderForms();
-            updateCV();
-            activateTabById("certs");
-        }
-
-        function activateTabById(id) {
-            const button = [...document.querySelectorAll(".nav-item")]
-                .find(item => item.getAttribute("onclick")?.includes(`'${id}'`));
-
-            if (button) setTab(id, button);
-        }
-
-        function updateItem(key, index, field, value) {
-            if (!cvData[key]?.[index]) return;
-
-            cvData[key][index][field] = value;
-            updateCV();
-        }
-
-        function removeItem(key, index) {
-            if (!cvData[key]) return;
-
-            cvData[key].splice(index, 1);
-            renderForms();
-            updateCV();
-        }
-
-        function moveItem(key, index, direction) {
-            const target = index + direction;
-
-            if (
-                !cvData[key] ||
-                target < 0 ||
-                target >= cvData[key].length
-            ) {
-                return;
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Generating...';
+                await html2pdf().set(opt).from(element).save();
+            } catch (err) {
+                console.error('PDF export failed', err);
+                alert('Something went wrong generating the PDF. Please try again.');
+            } finally {
+                element.style.boxShadow = oldShadow;
+                element.style.transform = oldTransform;
+                btn.disabled = false;
+                btn.innerHTML = oldText;
             }
-
-            [
-                cvData[key][index],
-                cvData[key][target]
-            ] = [
-                cvData[key][target],
-                cvData[key][index]
-            ];
-
-            renderForms();
-            updateCV();
         }
 
-        function openImport() {
-            $("import-file").click();
-        }
-
+        /* ---------- JSON backup / restore ---------- */
         function exportJSON() {
             const data = collectData();
-            const name = safeFilename(data.name || "resume");
-            const blob = new Blob(
-                [JSON.stringify(data, null, 2)],
-                { type: "application/json" }
-            );
-
-            downloadBlob(blob, `${name}_backup.json`);
-        }
-
-        function exportText() {
-            const text = $("cv-content").innerText.trim();
-            const name = safeFilename(getValue("in-name") || "resume");
-            const blob = new Blob(
-                [text],
-                { type: "text/plain;charset=utf-8" }
-            );
-
-            downloadBlob(blob, `${name}_resume.txt`);
-        }
-
-        function downloadBlob(blob, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const anchor = document.createElement("a");
-
-            anchor.href = url;
-            anchor.download = filename;
-            anchor.click();
-
-            setTimeout(() => URL.revokeObjectURL(url), 500);
-        }
-
-        function safeFilename(value) {
-            return String(value)
-                .trim()
-                .replace(/[^a-z0-9]+/gi, "_")
-                .replace(/^_+|_+$/g, "")
-                || "resume";
+            const a = document.createElement('a');
+            const name = (data.name || 'resume').trim().replace(/\s+/g, '_');
+            a.href = url; a.download = `${name}_backup.json`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         function importData(event) {
-            const file = event.target.files?.[0];
-
+            const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-
-            reader.onload = event => {
+            reader.onload = e => {
                 try {
-                    const data = JSON.parse(event.target.result);
-
-                    loadIntoForm(data);
+                    const d = JSON.parse(e.target.result);
+                    loadIntoForm(d);
                     renderForms();
                     updateCV();
-
-                    alert("Resume backup imported.");
-                } catch (error) {
-                    console.error(error);
-                    alert("That file is not a valid Ledger resume backup.");
+                } catch (err) {
+                    alert('That file could not be read as a resume backup.');
                 }
             };
-
             reader.readAsText(file);
-            event.target.value = "";
+            event.target.value = '';
         }
 
-        async function generatePDF() {
-            if (typeof html2pdf === "undefined") {
-                alert("The PDF library could not be loaded. Check your internet connection.");
-                return;
-            }
-
-            const element = $("resume-sheet");
-            const button = $("pdf-button");
-            const oldButtonContent = button.innerHTML;
-            const oldShadow = element.style.boxShadow;
-            const name = safeFilename(getValue("in-name") || "resume");
-
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-            element.style.boxShadow = "none";
-
-            const options = {
-                margin: 0,
-                filename: `${name}_Resume.pdf`,
-                image: {
-                    type: "jpeg",
-                    quality: .98
-                },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#ffffff"
-                },
-                pagebreak: {
-                    mode: ["css", "legacy"]
-                },
-                jsPDF: {
-                    unit: "mm",
-                    format: "a4",
-                    orientation: "portrait"
-                }
-            };
-
-            try {
-                await html2pdf()
-                    .set(options)
-                    .from(element)
-                    .save();
-            } catch (error) {
-                console.error("PDF generation failed:", error);
-                alert("PDF generation failed. Please try again.");
-            } finally {
-                button.disabled = false;
-                button.innerHTML = oldButtonContent;
-                element.style.boxShadow = oldShadow;
-            }
-        }
-
-        function runATSCheck() {
-            const jobText = $("job-description").value.toLowerCase().trim();
-            const resumeText = $("cv-content").innerText.toLowerCase();
-
-            if (!jobText) {
-                alert("Paste a job description first.");
-                return;
-            }
-
-            const stopWords = new Set([
-                "the", "and", "for", "with", "you", "your", "our",
-                "this", "that", "from", "are", "will", "have", "has",
-                "not", "but", "all", "who", "job", "role", "work",
-                "years", "year", "into", "their", "they", "about",
-                "using", "within", "across", "through"
-            ]);
-
-            const rawWords = jobText.match(/[a-z0-9+#./-]{3,}/g) || [];
-
-            const keywords = [...new Set(
-                rawWords.filter(word => !stopWords.has(word))
-            )];
-
-            const matched = keywords.filter(keyword =>
-                resumeText.includes(keyword)
-            );
-
-            const missing = keywords.filter(keyword =>
-                !resumeText.includes(keyword)
-            );
-
-            const score = keywords.length
-                ? Math.round((matched.length / keywords.length) * 100)
-                : 0;
-
-            const result = $("ats-results");
-            result.classList.add("visible");
-
-            result.innerHTML = `
-                <div class="ats-score">${score}% keyword match</div>
-                <p>
-                    Found <strong>${matched.length}</strong>
-                    of <strong>${keywords.length}</strong>
-                    detected keywords.
-                </p>
-
-                <div class="keyword-list">
-                    <p>
-                        <strong>Matched:</strong>
-                        ${matched.length ? matched.map(escapeHtml).join(", ") : "None yet"}
-                    </p>
-
-                    <p>
-                        <strong>Consider adding:</strong>
-                        ${missing.length ? missing.slice(0, 35).map(escapeHtml).join(", ") : "No obvious missing keywords"}
-                    </p>
-                </div>
-            `;
-        }
-
+        /* ---------- Demo & reset ---------- */
         function loadDemo() {
-            setValue("in-name", "Jordan Alexander");
-            setValue("in-title", "Senior Product Designer");
-            setValue("in-email", "jordan.alexander@design.com");
-            setValue("in-phone", "+1 (555) 987-6543");
-            setValue("in-loc", "San Francisco, CA");
-            setValue("in-link", "dribbble.com/jordanA");
-
-            setValue(
-                "in-summary",
-                "Award-winning product designer with 8+ years across SaaS and fintech. Focused on translating complex user needs into accessible, elegant interfaces, and mentoring design teams as they scale."
-            );
-
-            setValue(
-                "in-skills",
-                "UI/UX Design, Figma, Prototyping, Design Systems, HTML/CSS, Agile, User Testing"
-            );
+            document.getElementById('in-name').value = "Jordan Alexander";
+            document.getElementById('in-title').value = "Senior Product Designer";
+            document.getElementById('in-email').value = "jordan.alexander@design.com";
+            document.getElementById('in-phone').value = "+1 (555) 987-6543";
+            document.getElementById('in-loc').value = "San Francisco, CA";
+            document.getElementById('in-link').value = "dribbble.com/jordanA";
+            document.getElementById('in-summary').value = "Award-winning product designer with 8+ years across SaaS and fintech. Focused on translating complex user needs into accessible, elegant interfaces, and mentoring design teams as they scale.";
+            document.getElementById('in-skills').value = "UI/UX Design, Figma, Prototyping, Design Systems, HTML/CSS, Agile, User Testing";
 
             cvData.experience = [
-                {
-                    role: "Lead Product Designer",
-                    company: "Stripe",
-                    start: "2020",
-                    end: "Present",
-                    city: "Remote",
-                    desc: [
-                        "Spearheaded the redesign of the merchant dashboard, increasing user efficiency by 40%.",
-                        "Maintained and expanded the internal design system used by 200+ engineers.",
-                        "Ran A/B tests on checkout flows, lifting conversion by 15%."
-                    ].join("\n")
-                },
-                {
-                    role: "UX Designer",
-                    company: "Airbnb",
-                    start: "2017",
-                    end: "2020",
-                    city: "San Francisco",
-                    desc: [
-                        "Designed end-to-end experiences for the Experiences host platform.",
-                        "Partnered with product managers and engineers to ship three major feature launches."
-                    ].join("\n")
-                }
+                { role: "Lead Product Designer", company: "Stripe", start: "2020", end: "Present", city: "Remote", desc: "Spearheaded the redesign of the merchant dashboard, increasing user efficiency by 40%.\nMaintained and expanded the internal design system used by 200+ engineers.\nRan A/B tests on checkout flows, lifting conversion by 15%." },
+                { role: "UX Designer", company: "Airbnb", start: "2017", end: "2020", city: "San Francisco", desc: "Designed end-to-end experiences for the Experiences host platform.\nPartnered with PMs and engineers to ship three major feature launches." }
             ];
-
             cvData.education = [
-                {
-                    school: "Rhode Island School of Design",
-                    degree: "BFA in Industrial Design",
-                    year: "2016"
-                }
+                { school: "Rhode Island School of Design", degree: "BFA in Industrial Design", year: "2016" }
+            ];
+            cvData.projects = [
+                { name: "Open-source design tokens kit", date: "2023", link: "github.com/jordanA/tokens", desc: "Built and published a cross-platform design-token library adopted by 400+ repos." }
+            ];
+            cvData.certs = [
+                { name: "Certified Scrum Product Owner", issuer: "Scrum Alliance", year: "2021" }
             ];
 
-            cvData.projects = [
-                {
-                    name: "Open-source design tokens kit",
+            renderForms();
+            updateCV();
+        }
+
+        function resetData() {
+            if (confirm('Clear all data? This cannot be undone.')) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>
