@@ -3,1162 +3,825 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Composer — Resume Builder</title>
+<title>Draftline — Resume Builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-/* ============ TOKENS ============ */
-:root{
-  --ink:#14161c;
-  --panel:#1b1e28;
-  --panel-alt:#232733;
-  --line:#323848;
-  --text:#e9e7e0;
-  --text-dim:#9aa0b2;
-  --accent:#4f8a76;
-  --accent-bright:#72bfa3;
-  --gold:#c9a227;
-  --danger:#c0524a;
-  --paper:#fcfbf7;
-  --paper-text:#1c1c1c;
-  --paper-soft:#55544c;
-  --resume-accent:#4f8a76;
-  --radius:10px;
-}
-*{box-sizing:border-box;}
-html,body{margin:0;padding:0;}
-body{
-  background:var(--ink);
-  color:var(--text);
-  font-family:'Inter',sans-serif;
-  min-height:100vh;
-}
-button, input, textarea, select{ font-family:inherit; }
-::selection{ background:var(--accent); color:#0a0c0f; }
+  :root{
+    --ink:#10141c;
+    --panel:#161b26;
+    --panel-2:#1c2230;
+    --border:#2a3142;
+    --text:#e9ebf1;
+    --muted:#8c93a6;
+    --muted-2:#5f6678;
+    --brass:#c9a24a;
+    --brass-bright:#e0bd63;
+    --paper:#fbfaf7;
+    --paper-ink:#1c2129;
 
-/* ============ SHELL ============ */
-.app{
-  display:grid;
-  grid-template-columns:400px 1fr;
-  min-height:100vh;
-}
-.rail{
-  width:46px;
-  background:var(--panel-alt);
-  border-right:1px solid var(--line);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:18px 0;
-  gap:6px;
-  flex-shrink:0;
-}
-.rail-tab{
-  writing-mode:vertical-rl;
-  text-orientation:mixed;
-  background:transparent;
-  border:1px solid var(--line);
-  border-right:none;
-  color:var(--text-dim);
-  font-family:'IBM Plex Mono',monospace;
-  font-size:10.5px;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  padding:10px 7px;
-  cursor:pointer;
-  border-radius:6px 0 0 6px;
-  margin-right:-1px;
-  transition:.15s;
-}
-.rail-tab:hover{ color:var(--text); background:var(--panel); }
-.rail-tab.active{ color:var(--ink); background:var(--accent-bright); border-color:var(--accent-bright); }
+    --tmpl-accent:#1f3a5f;
+    --tmpl-accent-soft:#e9eef4;
+  }
 
-.panel-wrap{
-  display:flex;
-  min-width:0;
-}
-.panel{
-  background:var(--panel);
-  border-right:1px solid var(--line);
-  overflow-y:auto;
-  height:100vh;
-  position:sticky;
-  top:0;
-  flex:1;
-  min-width:0;
-}
-.panel::-webkit-scrollbar{ width:8px; }
-.panel::-webkit-scrollbar-thumb{ background:var(--line); border-radius:8px; }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
 
-.brand{
-  padding:22px 22px 16px;
-  border-bottom:1px solid var(--line);
-}
-.brand-mark{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  color:var(--accent-bright);
-}
-.brand h1{
-  font-family:'Space Grotesk',sans-serif;
-  font-size:22px;
-  margin:4px 0 0;
-  font-weight:600;
-}
-.brand p{
-  margin:6px 0 0;
-  font-size:12.5px;
-  color:var(--text-dim);
-  line-height:1.5;
-}
+  /* ---------- App shell ---------- */
+  .app{display:flex;flex-direction:column;height:100vh;}
 
-.section{
-  padding:20px 22px;
-  border-bottom:1px solid var(--line);
-}
-.section h2{
-  font-family:'Space Grotesk',sans-serif;
-  font-size:14px;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  margin:0 0 4px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.section h2 .num{
-  font-family:'IBM Plex Mono',monospace;
-  color:var(--accent-bright);
-  font-size:11px;
-}
-.section .hint{
-  font-size:12px;
-  color:var(--text-dim);
-  margin:0 0 14px;
-}
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#141924,#12161f);
+    flex-shrink:0;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:30px;height:30px;border-radius:7px;
+    background:linear-gradient(145deg,var(--brass-bright),var(--brass));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;color:#171008;font-size:16px;
+  }
+  .brand-name{font-family:'Fraunces',serif;font-weight:600;font-size:19px;letter-spacing:.2px;}
+  .brand-sub{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:1px;}
 
-.field{ margin-bottom:12px; }
-.field label{
-  display:block;
-  font-size:11.5px;
-  color:var(--text-dim);
-  margin-bottom:5px;
-  font-family:'IBM Plex Mono',monospace;
-  letter-spacing:.03em;
-}
-.field input[type=text], .field input[type=email], .field input[type=tel], .field input[type=url],
-.field input[type=month], .field input[type=date], .field textarea, .field select{
-  width:100%;
-  background:var(--panel-alt);
-  border:1px solid var(--line);
-  color:var(--text);
-  padding:9px 10px;
-  border-radius:7px;
-  font-size:13.5px;
-  outline:none;
-  transition:.15s border-color;
-}
-.field input:focus, .field textarea:focus, .field select:focus{
-  border-color:var(--accent-bright);
-}
-.field textarea{ resize:vertical; min-height:64px; line-height:1.5; }
-.row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-.checkline{ display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-dim); margin-top:-2px; }
-.checkline input{ accent-color:var(--accent-bright); }
+  .topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 
-/* repeatable entry cards */
-.entry{
-  background:var(--panel-alt);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:14px;
-  margin-bottom:12px;
-  position:relative;
-  cursor:grab;
-}
-.entry.dragging{ opacity:.4; }
-.entry-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-.entry-head .drag-dots{
-  font-family:'IBM Plex Mono',monospace;
-  color:var(--text-dim);
-  font-size:11px;
-  letter-spacing:.1em;
-}
-.entry-actions{ display:flex; gap:6px; }
-.icon-btn{
-  background:transparent;
-  border:1px solid var(--line);
-  color:var(--text-dim);
-  width:26px; height:26px;
-  border-radius:6px;
-  cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  font-size:13px;
-  line-height:1;
-}
-.icon-btn:hover{ color:var(--text); border-color:var(--accent-bright); }
-.icon-btn.danger:hover{ color:#fff; background:var(--danger); border-color:var(--danger); }
+  .completeness{
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;color:var(--muted);
+    padding:6px 12px 6px 6px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:var(--panel);
+  }
+  .ring{width:26px;height:26px;flex-shrink:0;}
+  .ring circle{fill:none;stroke-width:3;}
+  .ring .bg{stroke:#2a3142;}
+  .ring .fg{stroke:var(--brass-bright);stroke-linecap:round;transition:stroke-dashoffset .35s ease;}
 
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:7px;
-  background:var(--accent);
-  color:#0b0f0d;
-  border:none;
-  padding:10px 14px;
-  border-radius:8px;
-  font-weight:600;
-  font-size:13px;
-  cursor:pointer;
-  transition:.15s transform, .15s background;
-}
-.btn:hover{ background:var(--accent-bright); }
-.btn:active{ transform:scale(.97); }
-.btn-ghost{
-  background:transparent;
-  color:var(--text);
-  border:1px solid var(--line);
-}
-.btn-ghost:hover{ border-color:var(--accent-bright); color:var(--accent-bright); background:transparent; }
-.btn-block{ width:100%; }
-.btn-sm{ padding:7px 11px; font-size:12px; }
+  select.tmpl-select{
+    background:var(--panel);color:var(--text);
+    border:1px solid var(--border);border-radius:8px;
+    padding:8px 10px;font-family:'Inter',sans-serif;font-size:13px;
+    cursor:pointer;
+  }
 
-.tags{ display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
-.tag{
-  background:var(--panel);
-  border:1px solid var(--line);
-  color:var(--text);
-  padding:5px 8px 5px 10px;
-  border-radius:999px;
-  font-size:12px;
-  display:flex; align-items:center; gap:6px;
-}
-.tag button{
-  background:transparent; border:none; color:var(--text-dim); cursor:pointer; font-size:13px; padding:0;
-}
-.tag button:hover{ color:var(--danger); }
+  .btn{
+    border:none;border-radius:8px;padding:9px 16px;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13px;
+    cursor:pointer;transition:transform .12s ease, filter .12s ease;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:linear-gradient(145deg,var(--brass-bright),var(--brass));color:#1a1305;}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
+  .btn-ghost:hover{background:var(--panel-2);}
 
-/* ATS gauge */
-.ats-wrap{ display:flex; align-items:center; gap:14px; }
-.ats-gauge{ position:relative; width:74px; height:74px; flex-shrink:0; }
-.ats-gauge svg{ transform:rotate(-90deg); }
-.ats-gauge .pct{
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600;
-}
-.ats-tips{ font-size:12px; color:var(--text-dim); list-style:none; margin:8px 0 0; padding:0; }
-.ats-tips li{ padding:3px 0 3px 14px; position:relative; }
-.ats-tips li::before{ content:"—"; position:absolute; left:0; color:var(--gold); }
-.ats-tips li.ok{ display:none; }
+  /* ---------- Workspace ---------- */
+  .workspace{flex:1;display:flex;min-height:0;}
 
-/* template + style controls */
-.swatches{ display:flex; gap:8px; }
-.swatch-tpl{
-  flex:1;
-  border:1px solid var(--line);
-  background:var(--panel-alt);
-  border-radius:7px;
-  padding:8px 6px;
-  color:var(--text-dim);
-  font-size:11px;
-  cursor:pointer;
-  text-align:center;
-}
-.swatch-tpl.active{ border-color:var(--accent-bright); color:var(--accent-bright); background:rgba(114,191,163,.08); }
-.swatch-tpl .mini{
-  height:32px; border-radius:4px; margin-bottom:6px;
-  background:linear-gradient(180deg, #fff 0 8px, #ddd 8px 10px, #fff 10px);
-}
-.color-row{ display:flex; align-items:center; gap:10px; }
-.color-row input[type=color]{
-  width:34px; height:34px; border:1px solid var(--line); border-radius:8px; background:none; padding:2px; cursor:pointer;
-}
-.density-toggle{ display:flex; gap:8px; }
-.density-toggle button{ flex:1; }
+  .form-panel{
+    width:420px;flex-shrink:0;
+    border-right:1px solid var(--border);
+    display:flex;flex-direction:column;
+    background:var(--panel);
+    min-height:0;
+  }
 
-.actions-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
-.footer-note{ padding:16px 22px 26px; font-size:11px; color:var(--text-dim); line-height:1.6; }
+  .section-tabs{
+    display:flex;overflow-x:auto;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+    scrollbar-width:none;
+  }
+  .section-tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    flex-shrink:0;
+    padding:12px 14px;font-size:12.5px;font-weight:600;color:var(--muted);
+    cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;
+    transition:color .15s ease;
+  }
+  .tab.active{color:var(--brass-bright);border-bottom-color:var(--brass-bright);}
+  .tab:hover{color:var(--text);}
 
-/* ============ PREVIEW STAGE ============ */
-.stage{
-  background:#0f1116;
-  background-image:radial-gradient(circle at 1px 1px, #1c1f28 1px, transparent 0);
-  background-size:22px 22px;
-  overflow-y:auto;
-  height:100vh;
-  padding:42px 36px;
-  display:flex;
-  justify-content:center;
-}
-.stage-inner{ width:100%; max-width:820px; }
-.stage-toolbar{
-  display:flex; justify-content:space-between; align-items:center;
-  margin-bottom:16px;
-}
-.stage-toolbar .pagehint{ font-size:12px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; }
-.stage-toolbar .right{ display:flex; gap:10px; }
+  .form-scroll{flex:1;overflow-y:auto;padding:20px;}
+  .form-section{display:none;}
+  .form-section.active{display:block;animation:fade .18s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
 
-.paper{
-  background:var(--paper);
-  color:var(--paper-text);
-  width:100%;
-  min-height:1120px;
-  box-shadow:0 30px 60px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.05);
-  padding:56px 60px;
-  border-radius:2px;
-}
-.paper.density-compact{ padding:38px 44px; }
+  .section-title{font-family:'Fraunces',serif;font-size:18px;margin:0 0 4px;}
+  .section-hint{font-size:12.5px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
 
-/* ---- shared resume markup, styled per template ---- */
-.r-name{ margin:0; }
-.r-title{ margin:2px 0 0; }
-.r-contact{ margin:10px 0 0; display:flex; flex-wrap:wrap; gap:4px 14px; }
-.r-contact span{ white-space:nowrap; }
-.r-section{ margin-top:22px; }
-.r-section:first-of-type{ margin-top:26px; }
-.r-heading{ margin:0 0 10px; }
-.r-summary{ margin:0; }
-.r-item{ margin-bottom:14px; }
-.r-item:last-child{ margin-bottom:0; }
-.r-item-top{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; }
-.r-item-role{ margin:0; }
-.r-item-org{ margin:1px 0 0; }
-.r-item-date{ white-space:nowrap; font-variant-numeric:tabular-nums; }
-.r-bullets{ margin:6px 0 0; padding-left:18px; }
-.r-bullets li{ margin-bottom:3px; }
-.r-skillrow{ display:flex; flex-wrap:wrap; gap:8px; }
-.r-skill{ font-size:.85em; }
-.r-empty-msg{ color:#b7b5aa; font-style:italic; }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;font-size:11.5px;font-weight:600;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;
+  }
+  .field input, .field textarea{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);
+    color:var(--text);border-radius:8px;padding:10px 11px;
+    font-family:'Inter',sans-serif;font-size:13.5px;
+    transition:border-color .15s ease;
+  }
+  .field input:focus, .field textarea:focus{outline:none;border-color:var(--brass);}
+  .field textarea{resize:vertical;min-height:80px;line-height:1.5;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-/* Template: MODERN */
-.tpl-modern{ font-family:'Inter',sans-serif; }
-.tpl-modern .r-name{ font-family:'Space Grotesk',sans-serif; font-size:32px; font-weight:700; color:var(--resume-accent); }
-.tpl-modern .r-title{ font-size:14px; color:var(--paper-soft); font-weight:500; letter-spacing:.02em; }
-.tpl-modern .r-contact{ font-size:12px; color:var(--paper-soft); }
-.tpl-modern .r-heading{ font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--resume-accent); border-left:3px solid var(--resume-accent); padding-left:9px; }
-.tpl-modern .r-summary{ font-size:13.5px; line-height:1.65; }
-.tpl-modern .r-item-role{ font-size:14.5px; font-weight:600; }
-.tpl-modern .r-item-org{ font-size:13px; color:var(--paper-soft); }
-.tpl-modern .r-item-date{ font-size:12px; color:var(--paper-soft); }
-.tpl-modern .r-bullets{ font-size:13px; line-height:1.6; }
-.tpl-modern .r-skill{ background:color-mix(in srgb, var(--resume-accent) 14%, white); color:var(--resume-accent); border:1px solid color-mix(in srgb, var(--resume-accent) 35%, white); padding:4px 10px; border-radius:999px; font-weight:500; }
+  .entry-card{
+    border:1px solid var(--border);border-radius:10px;
+    padding:14px;margin-bottom:14px;background:var(--ink);
+    position:relative;
+  }
+  .entry-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .entry-card-head span{font-size:12px;font-weight:700;color:var(--brass-bright);text-transform:uppercase;letter-spacing:.06em;}
+  .icon-btn{
+    background:none;border:none;color:var(--muted-2);cursor:pointer;
+    width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    transition:color .15s ease, background .15s ease;
+  }
+  .icon-btn:hover{color:#e8747c;background:#2a1a1c;}
 
-/* Template: CLASSIC */
-.tpl-classic{ font-family:'Source Serif 4',serif; text-align:center; }
-.tpl-classic .r-name{ font-size:30px; font-weight:700; letter-spacing:.03em; }
-.tpl-classic .r-title{ font-size:13.5px; color:var(--paper-soft); text-transform:uppercase; letter-spacing:.14em; margin-top:5px; }
-.tpl-classic .r-contact{ justify-content:center; font-size:12px; color:var(--paper-soft); border-top:1px solid #cfcdbe; border-bottom:1px solid #cfcdbe; padding:8px 0; margin-top:14px; }
-.tpl-classic .r-section{ text-align:left; }
-.tpl-classic .r-heading{ font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:.16em; text-align:center; border-bottom:1px solid #cfcdbe; padding-bottom:6px; }
-.tpl-classic .r-summary{ font-size:13.5px; line-height:1.7; text-align:left; }
-.tpl-classic .r-item-role{ font-size:14.5px; font-weight:700; }
-.tpl-classic .r-item-org{ font-size:13px; font-style:italic; color:var(--paper-soft); }
-.tpl-classic .r-item-date{ font-size:12px; color:var(--paper-soft); font-style:italic; }
-.tpl-classic .r-bullets{ font-size:13px; line-height:1.65; }
-.tpl-classic .r-skillrow{ justify-content:flex-start; }
-.tpl-classic .r-skill{ border-right:1px solid #cfcdbe; padding-right:10px; }
-.tpl-classic .r-skill:last-child{ border-right:none; }
+  .add-btn{
+    width:100%;border:1.5px dashed var(--border);background:transparent;
+    color:var(--muted);padding:11px;border-radius:9px;font-size:13px;font-weight:600;
+    cursor:pointer;transition:all .15s ease;
+  }
+  .add-btn:hover{border-color:var(--brass);color:var(--brass-bright);}
 
-/* Template: MINIMAL */
-.tpl-minimal{ font-family:'Inter',sans-serif; font-weight:300; }
-.tpl-minimal .r-name{ font-size:28px; font-weight:300; letter-spacing:.01em; }
-.tpl-minimal .r-title{ font-size:13px; color:var(--paper-soft); font-weight:400; }
-.tpl-minimal .r-contact{ font-size:11.5px; color:var(--paper-soft); text-transform:uppercase; letter-spacing:.06em; }
-.tpl-minimal .r-heading{ font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.22em; color:#9a988c; }
-.tpl-minimal .r-summary{ font-size:13.5px; line-height:1.75; font-weight:300; }
-.tpl-minimal .r-item-role{ font-size:14px; font-weight:500; }
-.tpl-minimal .r-item-org{ font-size:12.5px; color:var(--paper-soft); }
-.tpl-minimal .r-item-date{ font-size:11.5px; color:#9a988c; }
-.tpl-minimal .r-bullets{ font-size:13px; line-height:1.7; font-weight:300; }
-.tpl-minimal .r-bullets li::marker{ color:var(--resume-accent); }
-.tpl-minimal .r-skill::after{ content:"·"; margin-left:8px; color:#c9c7ba; }
-.tpl-minimal .r-skill:last-child::after{ content:""; }
+  .tag-input-wrap{
+    display:flex;flex-wrap:wrap;gap:6px;background:var(--panel-2);
+    border:1px solid var(--border);border-radius:8px;padding:8px;
+  }
+  .tag{
+    background:#26314a;color:#d8e0f0;font-size:12px;font-weight:600;
+    padding:5px 9px;border-radius:6px;display:flex;align-items:center;gap:6px;
+  }
+  .tag button{background:none;border:none;color:#a9b3c9;cursor:pointer;font-size:13px;line-height:1;padding:0;}
+  .tag-input-wrap input{flex:1;min-width:90px;border:none;background:none;color:var(--text);font-size:13px;padding:5px;}
+  .tag-input-wrap input:focus{outline:none;}
 
-/* ============ RESPONSIVE ============ */
-@media (max-width: 980px){
-  .app{ grid-template-columns:1fr; }
-  .panel-wrap{ order:2; }
-  .panel{ height:auto; position:relative; }
-  .rail{ flex-direction:row; width:100%; height:auto; overflow-x:auto; order:1; padding:10px; }
-  .rail-tab{ writing-mode:horizontal-tb; border:1px solid var(--line); border-radius:6px; flex-shrink:0; }
-  .stage{ height:auto; order:3; padding:24px 14px; }
-  .paper{ padding:34px 26px; }
-}
+  .level-select{display:flex;gap:5px;margin-top:4px;}
+  .level-dot{width:16px;height:8px;border-radius:3px;background:var(--border);cursor:pointer;}
+  .level-dot.filled{background:var(--brass-bright);}
 
-/* ============ PRINT ============ */
-@media print{
-  body *{ visibility:hidden; }
-  .paper, .paper *{ visibility:visible; }
-  .paper{ box-shadow:none; position:absolute; top:0; left:0; width:100%; padding:0 6mm; border-radius:0; }
-  @page{ margin:14mm 12mm; }
-}
+  /* ---------- Preview ---------- */
+  .preview-panel{flex:1;display:flex;flex-direction:column;min-width:0;background:#0c0f16;}
+  .preview-toolbar{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:12px;border-bottom:1px solid var(--border);flex-shrink:0;
+  }
+  .swatch{
+    width:22px;height:22px;border-radius:50%;cursor:pointer;
+    border:2px solid transparent;transition:border-color .15s ease, transform .15s ease;
+  }
+  .swatch.active{border-color:#fff;transform:scale(1.12);}
+  .swatch-sep{width:1px;height:20px;background:var(--border);margin:0 6px;}
+  .zoom-label{font-size:12px;color:var(--muted);min-width:38px;text-align:center;}
+  .zoom-btn{background:var(--panel);border:1px solid var(--border);color:var(--text);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:14px;}
+
+  .paper-scroll{flex:1;overflow:auto;display:flex;justify-content:center;padding:34px 20px;}
+  .paper-outer{transform-origin:top center;transition:transform .15s ease;}
+
+  .paper{
+    width:794px;min-height:1123px;
+    background:var(--paper);color:var(--paper-ink);
+    box-shadow:0 20px 60px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.4);
+    font-family:'Source Serif 4',serif;
+  }
+
+  /* ===== Template: Classic ===== */
+  .tmpl-classic{padding:52px 56px;}
+  .tmpl-classic .r-name{font-family:'Fraunces',serif;font-weight:600;font-size:34px;margin:0;color:var(--tmpl-accent);letter-spacing:-.5px;}
+  .tmpl-classic .r-title{font-family:'Inter',sans-serif;font-size:14px;color:#4a5266;margin:4px 0 14px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;}
+  .tmpl-classic .r-contacts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:#565f73;font-family:'Inter',sans-serif;padding-bottom:16px;border-bottom:2px solid var(--tmpl-accent);margin-bottom:22px;}
+  .tmpl-classic .r-section{margin-bottom:20px;}
+  .tmpl-classic .r-h2{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tmpl-accent);margin:0 0 10px;padding-bottom:5px;border-bottom:1px solid #d8dce3;}
+  .tmpl-classic .r-summary{font-size:13.5px;line-height:1.65;color:#333a49;margin:0;}
+  .tmpl-classic .r-item{margin-bottom:14px;}
+  .tmpl-classic .r-item-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .tmpl-classic .r-item-title{font-family:'Fraunces',serif;font-weight:600;font-size:15.5px;}
+  .tmpl-classic .r-item-org{font-family:'Inter',sans-serif;font-size:12.5px;color:#565f73;font-weight:600;margin-top:1px;}
+  .tmpl-classic .r-item-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a8296;white-space:nowrap;}
+  .tmpl-classic .r-item-desc{font-size:13px;line-height:1.6;color:#3d4456;margin:6px 0 0;white-space:pre-line;}
+  .tmpl-classic .r-skills{display:flex;flex-wrap:wrap;gap:7px;}
+  .tmpl-classic .r-skill-pill{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;background:var(--tmpl-accent-soft);color:var(--tmpl-accent);padding:5px 11px;border-radius:20px;}
+  .tmpl-classic .r-two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+
+  /* ===== Template: Modern (sidebar) ===== */
+  .tmpl-modern{display:grid;grid-template-columns:260px 1fr;min-height:1123px;}
+  .tmpl-modern .r-side{background:var(--tmpl-accent);color:#f2f4f8;padding:46px 28px;}
+  .tmpl-modern .r-side .r-name{font-family:'Fraunces',serif;font-size:26px;font-weight:600;margin:0 0 2px;line-height:1.15;color:#fff;}
+  .tmpl-modern .r-side .r-title{font-family:'Inter',sans-serif;font-size:12.5px;opacity:.82;margin:0 0 26px;text-transform:uppercase;letter-spacing:.06em;}
+  .tmpl-modern .r-side .r-h2{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7;margin:22px 0 10px;}
+  .tmpl-modern .r-side .r-h2:first-of-type{margin-top:0;}
+  .tmpl-modern .r-side .r-contact-line{font-family:'Inter',sans-serif;font-size:11.5px;margin-bottom:7px;opacity:.92;word-break:break-word;}
+  .tmpl-modern .r-side .r-skill-pill{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;background:rgba(255,255,255,.14);padding:4px 10px;border-radius:20px;display:inline-block;margin:0 5px 6px 0;}
+  .tmpl-modern .r-side .r-lang-line{font-family:'Inter',sans-serif;font-size:11.5px;display:flex;justify-content:space-between;margin-bottom:7px;opacity:.92;}
+  .tmpl-modern .r-main{padding:46px 38px;}
+  .tmpl-modern .r-main .r-section{margin-bottom:22px;}
+  .tmpl-modern .r-main .r-h2{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tmpl-accent);margin:0 0 12px;}
+  .tmpl-modern .r-summary{font-size:13.5px;line-height:1.65;color:#333a49;margin:0;}
+  .tmpl-modern .r-item{margin-bottom:16px;}
+  .tmpl-modern .r-item-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .tmpl-modern .r-item-title{font-family:'Fraunces',serif;font-weight:600;font-size:15px;}
+  .tmpl-modern .r-item-org{font-family:'Inter',sans-serif;font-size:12.5px;color:#565f73;font-weight:600;margin-top:1px;}
+  .tmpl-modern .r-item-date{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#7a8296;white-space:nowrap;}
+  .tmpl-modern .r-item-desc{font-size:12.5px;line-height:1.6;color:#3d4456;margin:5px 0 0;white-space:pre-line;}
+
+  .empty-msg{color:#9aa1b3;font-size:12.5px;font-style:italic;font-family:'Inter',sans-serif;}
+
+  @media (max-width:900px){
+    .form-panel{width:100%;position:absolute;inset:0;z-index:5;}
+    .workspace{position:relative;}
+    .preview-panel{display:none;}
+  }
 </style>
 </head>
 <body>
 
 <div class="app">
-  <div class="rail" id="rail"></div>
-
-  <div class="panel-wrap">
-    <div class="panel" id="panel">
-      <div class="brand">
-        <div class="brand-mark">Composer</div>
-        <h1>Resume Builder</h1>
-        <p>Fill in each section on the left — your resume updates live on the right. Everything is saved to this browser automatically.</p>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">D</div>
+      <div>
+        <div class="brand-name">Draftline</div>
+        <div class="brand-sub">Resume Builder</div>
       </div>
-
-      <!-- PERSONAL -->
-      <div class="section" id="sec-personal">
-        <h2><span class="num">01</span> Personal details</h2>
-        <div class="field"><label>Full name</label><input type="text" id="p-name" placeholder="Jordan Vale"></div>
-        <div class="field"><label>Target title / headline</label><input type="text" id="p-title" placeholder="Senior Product Designer"></div>
-        <div class="row2">
-          <div class="field"><label>Email</label><input type="email" id="p-email" placeholder="jordan@email.com"></div>
-          <div class="field"><label>Phone</label><input type="tel" id="p-phone" placeholder="+27 71 234 5678"></div>
-        </div>
-        <div class="row2">
-          <div class="field"><label>Location</label><input type="text" id="p-location" placeholder="Durban, South Africa"></div>
-          <div class="field"><label>Website / portfolio</label><input type="url" id="p-website" placeholder="jordanvale.com"></div>
-        </div>
-        <div class="row2">
-          <div class="field"><label>LinkedIn</label><input type="text" id="p-linkedin" placeholder="linkedin.com/in/jordanvale"></div>
-          <div class="field"><label>GitHub</label><input type="text" id="p-github" placeholder="github.com/jordanvale"></div>
-        </div>
-      </div>
-
-      <!-- SUMMARY -->
-      <div class="section" id="sec-summary">
-        <h2><span class="num">02</span> Summary</h2>
-        <p class="hint">Two to four sentences on who you are and what you bring.</p>
-        <div class="field"><textarea id="p-summary" rows="4" placeholder="Product designer with 6 years building B2B dashboards, taking features from research to shipped UI. Led a 3-person design team and cut onboarding drop-off by 24%."></textarea></div>
-      </div>
-
-      <!-- EXPERIENCE -->
-      <div class="section" id="sec-experience">
-        <h2><span class="num">03</span> Experience</h2>
-        <p class="hint">Drag a card by its dots to reorder. One bullet per line.</p>
-        <div id="list-experience"></div>
-        <button class="btn btn-ghost btn-block" data-add="experience">+ Add experience</button>
-      </div>
-
-      <!-- EDUCATION -->
-      <div class="section" id="sec-education">
-        <h2><span class="num">04</span> Education</h2>
-        <div id="list-education"></div>
-        <button class="btn btn-ghost btn-block" data-add="education">+ Add education</button>
-      </div>
-
-      <!-- SKILLS -->
-      <div class="section" id="sec-skills">
-        <h2><span class="num">05</span> Skills</h2>
-        <p class="hint">Type a skill and press Enter.</p>
-        <div class="field"><input type="text" id="skill-input" placeholder="e.g. Figma, SQL, Stakeholder management"></div>
-        <div class="tags" id="skill-tags"></div>
-      </div>
-
-      <!-- PROJECTS -->
-      <div class="section" id="sec-projects">
-        <h2><span class="num">06</span> Projects</h2>
-        <div id="list-projects"></div>
-        <button class="btn btn-ghost btn-block" data-add="projects">+ Add project</button>
-      </div>
-
-      <!-- CERTIFICATIONS -->
-      <div class="section" id="sec-certs">
-        <h2><span class="num">07</span> Certifications</h2>
-        <div id="list-certifications"></div>
-        <button class="btn btn-ghost btn-block" data-add="certifications">+ Add certification</button>
-      </div>
-
-      <!-- LANGUAGES -->
-      <div class="section" id="sec-languages">
-        <h2><span class="num">08</span> Languages</h2>
-        <div id="list-languages"></div>
-        <button class="btn btn-ghost btn-block" data-add="languages">+ Add language</button>
-      </div>
-
-      <!-- CUSTOM -->
-      <div class="section" id="sec-custom">
-        <h2><span class="num">09</span> Custom sections</h2>
-        <p class="hint">Add anything else — awards, publications, volunteering.</p>
-        <div id="list-custom"></div>
-        <button class="btn btn-ghost btn-block" data-add="custom">+ Add custom section</button>
-      </div>
-
-      <!-- ATS -->
-      <div class="section" id="sec-ats">
-        <h2><span class="num">10</span> ATS readiness</h2>
-        <div class="ats-wrap">
-          <div class="ats-gauge">
-            <svg width="74" height="74" viewBox="0 0 74 74">
-              <circle cx="37" cy="37" r="31" fill="none" stroke="var(--line)" stroke-width="7"></circle>
-              <circle id="ats-ring" cx="37" cy="37" r="31" fill="none" stroke="var(--accent-bright)" stroke-width="7" stroke-linecap="round" stroke-dasharray="194.7" stroke-dashoffset="194.7"></circle>
-            </svg>
-            <div class="pct" id="ats-pct">0%</div>
-          </div>
-          <div style="font-size:12px;color:var(--text-dim);flex:1;">A quick heuristic score for how machine-readable and complete your resume is. Not affiliated with any specific ATS.</div>
-        </div>
-        <ul class="ats-tips" id="ats-tips"></ul>
-      </div>
-
-      <!-- STYLE -->
-      <div class="section" id="sec-style">
-        <h2><span class="num">11</span> Template &amp; style</h2>
-        <div class="swatches" id="tpl-swatches">
-          <button class="swatch-tpl" data-tpl="modern"><div class="mini" style="background:linear-gradient(180deg,#fff 0 10px,#4f8a76 10px 13px,#fff 13px);"></div>Modern</button>
-          <button class="swatch-tpl" data-tpl="classic"><div class="mini" style="background:linear-gradient(180deg,#fff 0 6px,#333 6px 8px,#fff 8px 20px,#333 20px 21px,#fff 21px);"></div>Classic</button>
-          <button class="swatch-tpl" data-tpl="minimal"><div class="mini" style="background:linear-gradient(180deg,#fff 0 8px,#ccc 8px 9px,#fff 9px);"></div>Minimal</button>
-        </div>
-        <div class="field" style="margin-top:14px;">
-          <label>Accent color</label>
-          <div class="color-row">
-            <input type="color" id="accent-color" value="#4f8a76">
-            <span id="accent-hex" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);">#4f8a76</span>
-          </div>
-        </div>
-        <div class="field">
-          <label>Density</label>
-          <div class="density-toggle">
-            <button class="btn btn-ghost btn-sm" data-density="comfortable">Comfortable</button>
-            <button class="btn btn-ghost btn-sm" data-density="compact">Compact</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ACTIONS -->
-      <div class="section" id="sec-actions">
-        <h2><span class="num">12</span> Save &amp; export</h2>
-        <button class="btn btn-block" id="btn-pdf">⬇ Download PDF</button>
-        <div class="actions-grid">
-          <button class="btn btn-ghost" id="btn-export">Export JSON</button>
-          <button class="btn btn-ghost" id="btn-import">Import JSON</button>
-          <button class="btn btn-ghost" id="btn-sample">Load sample</button>
-          <button class="btn btn-ghost" id="btn-clear">Clear all</button>
-        </div>
-        <input type="file" id="file-import" accept="application/json" style="display:none;">
-      </div>
-
-      <div class="footer-note">Autosaves to this browser's local storage as you type. Nothing is sent anywhere — export a JSON backup if you're switching devices.</div>
     </div>
-  </div>
-
-  <div class="stage">
-    <div class="stage-inner">
-      <div class="stage-toolbar">
-        <div class="pagehint" id="page-hint">A4 / Letter friendly · single page target</div>
+    <div class="topbar-right">
+      <div class="completeness" id="completenessWrap">
+        <svg class="ring" viewBox="0 0 32 32">
+          <circle class="bg" cx="16" cy="16" r="13"></circle>
+          <circle class="fg" id="ringFg" cx="16" cy="16" r="13" stroke-dasharray="81.7" stroke-dashoffset="81.7" transform="rotate(-90 16 16)"></circle>
+        </svg>
+        <span id="completenessLabel">0% complete</span>
       </div>
-      <div class="paper tpl-modern density-comfortable" id="paper" style="--resume-accent:#4f8a76;"></div>
+      <select class="tmpl-select" id="templateSelect">
+        <option value="classic">Classic</option>
+        <option value="modern">Modern Sidebar</option>
+      </select>
+      <button class="btn btn-ghost" id="sampleBtn">Load sample</button>
+      <button class="btn btn-primary" id="downloadBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v13m0 0l-5-5m5 5l5-5M4 21h16"/></svg>
+        Download PDF
+      </button>
     </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="form-panel">
+      <nav class="section-tabs" id="sectionTabs">
+        <div class="tab active" data-target="personal">Personal</div>
+        <div class="tab" data-target="summary">Summary</div>
+        <div class="tab" data-target="experience">Experience</div>
+        <div class="tab" data-target="education">Education</div>
+        <div class="tab" data-target="skills">Skills</div>
+        <div class="tab" data-target="extras">Extras</div>
+      </nav>
+
+      <div class="form-scroll">
+
+        <!-- PERSONAL -->
+        <section class="form-section active" data-section="personal">
+          <h3 class="section-title">Personal details</h3>
+          <p class="section-hint">This appears at the top of your resume, so make sure it's accurate.</p>
+          <div class="field"><label>Full name</label><input type="text" id="p_name" placeholder="Rahul Naidoo"></div>
+          <div class="field"><label>Job title</label><input type="text" id="p_title" placeholder="Telecoms Systems Specialist"></div>
+          <div class="field-row">
+            <div class="field"><label>Email</label><input type="email" id="p_email" placeholder="you@email.com"></div>
+            <div class="field"><label>Phone</label><input type="text" id="p_phone" placeholder="+27 71 234 5678"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Location</label><input type="text" id="p_location" placeholder="Durban North, ZA"></div>
+            <div class="field"><label>Website / LinkedIn</label><input type="text" id="p_website" placeholder="linkedin.com/in/you"></div>
+          </div>
+        </section>
+
+        <!-- SUMMARY -->
+        <section class="form-section" data-section="summary">
+          <h3 class="section-title">Professional summary</h3>
+          <p class="section-hint">Two to three sentences on who you are and what you bring. Skip the buzzwords.</p>
+          <div class="field">
+            <textarea id="p_summary" rows="7" placeholder="Telecoms specialist with 5+ years configuring push-to-talk platforms and guarding-site deployments for enterprise clients across South Africa..."></textarea>
+          </div>
+        </section>
+
+        <!-- EXPERIENCE -->
+        <section class="form-section" data-section="experience">
+          <h3 class="section-title">Work experience</h3>
+          <p class="section-hint">List your most recent role first.</p>
+          <div id="experienceList"></div>
+          <button class="add-btn" id="addExperience">+ Add position</button>
+        </section>
+
+        <!-- EDUCATION -->
+        <section class="form-section" data-section="education">
+          <h3 class="section-title">Education</h3>
+          <p class="section-hint">Degrees, diplomas, or relevant courses.</p>
+          <div id="educationList"></div>
+          <button class="add-btn" id="addEducation">+ Add education</button>
+        </section>
+
+        <!-- SKILLS -->
+        <section class="form-section" data-section="skills">
+          <h3 class="section-title">Skills</h3>
+          <p class="section-hint">Type a skill and hit Enter to add it.</p>
+          <div class="field">
+            <label>Skills</label>
+            <div class="tag-input-wrap" id="skillsWrap">
+              <input type="text" id="skillInput" placeholder="Add a skill...">
+            </div>
+          </div>
+        </section>
+
+        <!-- EXTRAS -->
+        <section class="form-section" data-section="extras">
+          <h3 class="section-title">Languages</h3>
+          <p class="section-hint">Add languages and how well you speak them.</p>
+          <div id="languageList"></div>
+          <button class="add-btn" id="addLanguage">+ Add language</button>
+        </section>
+
+      </div>
+    </aside>
+
+    <main class="preview-panel">
+      <div class="preview-toolbar">
+        <div class="swatch active" data-color="#1f3a5f" style="background:#1f3a5f"></div>
+        <div class="swatch" data-color="#7a3b2e" style="background:#7a3b2e"></div>
+        <div class="swatch" data-color="#2f4a3c" style="background:#2f4a3c"></div>
+        <div class="swatch" data-color="#4b3a5e" style="background:#4b3a5e"></div>
+        <div class="swatch" data-color="#1a1a1a" style="background:#1a1a1a"></div>
+        <div class="swatch-sep"></div>
+        <button class="zoom-btn" id="zoomOut">−</button>
+        <span class="zoom-label" id="zoomLabel">80%</span>
+        <button class="zoom-btn" id="zoomIn">+</button>
+      </div>
+      <div class="paper-scroll">
+        <div class="paper-outer" id="paperOuter">
+          <div class="paper tmpl-classic" id="resumePaper"></div>
+        </div>
+      </div>
+    </main>
   </div>
 </div>
 
 <script>
 (function(){
-"use strict";
+  "use strict";
 
-/* ---------- helpers ---------- */
-const $ = (sel, ctx) => (ctx||document).querySelector(sel);
-const $$ = (sel, ctx) => Array.from((ctx||document).querySelectorAll(sel));
-const uid = () => Math.random().toString(36).slice(2,10);
-function esc(str){
-  return String(str==null?'':str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-const STORAGE_KEY = 'composerResumeState.v1';
-
-/* ---------- default state ---------- */
-function blankState(){
-  return {
-    meta:{ template:'modern', accent:'#4f8a76', density:'comfortable' },
-    personal:{ name:'', title:'', email:'', phone:'', location:'', website:'', linkedin:'', github:'' },
-    summary:'',
+  const state = {
+    template:"classic",
+    accent:"#1f3a5f",
+    personal:{name:"",title:"",email:"",phone:"",location:"",website:""},
+    summary:"",
     experience:[],
     education:[],
     skills:[],
-    projects:[],
-    certifications:[],
-    languages:[],
-    custom:[]
+    languages:[]
   };
-}
-let state = blankState();
 
-function newExperience(){ return { id:uid(), role:'', company:'', location:'', start:'', end:'', current:false, bullets:'' }; }
-function newEducation(){ return { id:uid(), school:'', degree:'', field:'', start:'', end:'', details:'' }; }
-function newProject(){ return { id:uid(), name:'', description:'', tech:'', link:'' }; }
-function newCert(){ return { id:uid(), name:'', issuer:'', date:'' }; }
-function newLanguage(){ return { id:uid(), name:'', level:'Professional' }; }
-function newCustom(){ return { id:uid(), title:'Awards', body:'' }; }
+  let idCounter = 1;
+  const uid = () => "id" + (idCounter++);
 
-/* ---------- persistence ---------- */
-let saveTimer=null;
-function scheduleSave(){
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* storage unavailable */ }
-  }, 250);
-}
-function loadFromStorage(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      state = Object.assign(blankState(), parsed);
-    }
-  }catch(e){ /* ignore corrupt data */ }
-}
+  // ---------- Tab switching ----------
+  document.getElementById("sectionTabs").addEventListener("click", (e)=>{
+    const tab = e.target.closest(".tab");
+    if(!tab) return;
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".form-section").forEach(s=>s.classList.remove("active"));
+    tab.classList.add("active");
+    document.querySelector(`.form-section[data-section="${tab.dataset.target}"]`).classList.add("active");
+  });
 
-/* ---------- rail / section nav ---------- */
-const RAIL_SECTIONS = [
-  ['sec-personal','Info'],['sec-summary','Summary'],['sec-experience','Work'],
-  ['sec-education','School'],['sec-skills','Skills'],['sec-projects','Projects'],
-  ['sec-certs','Certs'],['sec-languages','Lang'],['sec-custom','Extra'],
-  ['sec-ats','ATS'],['sec-style','Style'],['sec-actions','Export']
-];
-function buildRail(){
-  const rail = $('#rail');
-  rail.innerHTML = RAIL_SECTIONS.map(([id,label]) =>
-    `<button class="rail-tab" data-target="${id}">${esc(label)}</button>`).join('');
-  rail.addEventListener('click', e=>{
-    const btn = e.target.closest('.rail-tab');
+  // ---------- Personal fields ----------
+  const personalFields = {p_name:"name",p_title:"title",p_email:"email",p_phone:"phone",p_location:"location",p_website:"website"};
+  Object.keys(personalFields).forEach(id=>{
+    document.getElementById(id).addEventListener("input",(e)=>{
+      state.personal[personalFields[id]] = e.target.value;
+      render();
+    });
+  });
+
+  document.getElementById("p_summary").addEventListener("input",(e)=>{
+    state.summary = e.target.value;
+    render();
+  });
+
+  // ---------- Experience ----------
+  function addExperience(data){
+    const entry = Object.assign({id:uid(), role:"", company:"", start:"", end:"", description:""}, data||{});
+    state.experience.push(entry);
+    renderExperienceForm();
+    render();
+  }
+
+  function renderExperienceForm(){
+    const list = document.getElementById("experienceList");
+    list.innerHTML = "";
+    state.experience.forEach((entry, idx)=>{
+      const card = document.createElement("div");
+      card.className = "entry-card";
+      card.innerHTML = `
+        <div class="entry-card-head">
+          <span>Position ${idx+1}</span>
+          <button class="icon-btn" data-remove="${entry.id}" data-list="experience" title="Remove">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="field"><label>Job title</label><input type="text" data-field="role" value="${esc(entry.role)}" placeholder="Field Operations Coordinator"></div>
+        <div class="field"><label>Company</label><input type="text" data-field="company" value="${esc(entry.company)}" placeholder="Radiosource Telecoms"></div>
+        <div class="field-row">
+          <div class="field"><label>Start</label><input type="text" data-field="start" value="${esc(entry.start)}" placeholder="Jan 2022"></div>
+          <div class="field"><label>End</label><input type="text" data-field="end" value="${esc(entry.end)}" placeholder="Present"></div>
+        </div>
+        <div class="field"><label>Description</label><textarea data-field="description" rows="4" placeholder="Configured guarding sites on the iTALKPTT platform...">${esc(entry.description)}</textarea></div>
+      `;
+      card.querySelectorAll("[data-field]").forEach(input=>{
+        input.addEventListener("input", (e)=>{
+          entry[e.target.dataset.field] = e.target.value;
+          render();
+        });
+      });
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("addExperience").addEventListener("click", ()=>addExperience());
+
+  // ---------- Education ----------
+  function addEducation(data){
+    const entry = Object.assign({id:uid(), degree:"", school:"", start:"", end:"", description:""}, data||{});
+    state.education.push(entry);
+    renderEducationForm();
+    render();
+  }
+
+  function renderEducationForm(){
+    const list = document.getElementById("educationList");
+    list.innerHTML = "";
+    state.education.forEach((entry, idx)=>{
+      const card = document.createElement("div");
+      card.className = "entry-card";
+      card.innerHTML = `
+        <div class="entry-card-head">
+          <span>Education ${idx+1}</span>
+          <button class="icon-btn" data-remove="${entry.id}" data-list="education" title="Remove">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="field"><label>Degree / Qualification</label><input type="text" data-field="degree" value="${esc(entry.degree)}" placeholder="National Diploma in IT"></div>
+        <div class="field"><label>School</label><input type="text" data-field="school" value="${esc(entry.school)}" placeholder="Durban University of Technology"></div>
+        <div class="field-row">
+          <div class="field"><label>Start</label><input type="text" data-field="start" value="${esc(entry.start)}" placeholder="2016"></div>
+          <div class="field"><label>End</label><input type="text" data-field="end" value="${esc(entry.end)}" placeholder="2019"></div>
+        </div>
+        <div class="field"><label>Notes (optional)</label><textarea data-field="description" rows="2" placeholder="Relevant coursework, honors...">${esc(entry.description)}</textarea></div>
+      `;
+      card.querySelectorAll("[data-field]").forEach(input=>{
+        input.addEventListener("input", (e)=>{
+          entry[e.target.dataset.field] = e.target.value;
+          render();
+        });
+      });
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("addEducation").addEventListener("click", ()=>addEducation());
+
+  // ---------- Languages ----------
+  function addLanguage(data){
+    const entry = Object.assign({id:uid(), name:"", level:"Fluent"}, data||{});
+    state.languages.push(entry);
+    renderLanguageForm();
+    render();
+  }
+
+  function renderLanguageForm(){
+    const list = document.getElementById("languageList");
+    list.innerHTML = "";
+    state.languages.forEach((entry)=>{
+      const row = document.createElement("div");
+      row.className = "entry-card";
+      row.innerHTML = `
+        <div class="entry-card-head">
+          <span>Language</span>
+          <button class="icon-btn" data-remove="${entry.id}" data-list="languages" title="Remove">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Language</label><input type="text" data-field="name" value="${esc(entry.name)}" placeholder="Zulu"></div>
+          <div class="field"><label>Level</label><input type="text" data-field="level" value="${esc(entry.level)}" placeholder="Fluent"></div>
+        </div>
+      `;
+      row.querySelectorAll("[data-field]").forEach(input=>{
+        input.addEventListener("input", (e)=>{
+          entry[e.target.dataset.field] = e.target.value;
+          render();
+        });
+      });
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById("addLanguage").addEventListener("click", ()=>addLanguage());
+
+  // ---------- Remove (delegated) ----------
+  document.querySelector(".form-scroll").addEventListener("click",(e)=>{
+    const btn = e.target.closest("[data-remove]");
     if(!btn) return;
-    const target = document.getElementById(btn.dataset.target);
-    if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    const id = btn.dataset.remove;
+    const listName = btn.dataset.list;
+    state[listName] = state[listName].filter(item=>item.id !== id);
+    if(listName === "experience") renderExperienceForm();
+    if(listName === "education") renderEducationForm();
+    if(listName === "languages") renderLanguageForm();
+    render();
   });
-}
-function watchRailHighlight(){
-  const panel = $('#panel');
-  const tabs = $$('.rail-tab');
-  panel.addEventListener('scroll', ()=>{
-    let closestId = null, closestDist = Infinity;
-    RAIL_SECTIONS.forEach(([id])=>{
-      const el = document.getElementById(id);
-      if(!el) return;
-      const dist = Math.abs(el.getBoundingClientRect().top - panel.getBoundingClientRect().top - 10);
-      if(dist < closestDist){ closestDist = dist; closestId = id; }
+
+  // ---------- Skills ----------
+  const skillInput = document.getElementById("skillInput");
+  const skillsWrap = document.getElementById("skillsWrap");
+
+  function renderSkillTags(){
+    skillsWrap.querySelectorAll(".tag").forEach(t=>t.remove());
+    state.skills.forEach((skill, idx)=>{
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerHTML = `${esc(skill)} <button data-idx="${idx}">×</button>`;
+      skillsWrap.insertBefore(tag, skillInput);
     });
-    tabs.forEach(t => t.classList.toggle('active', t.dataset.target===closestId));
-  }, {passive:true});
-}
-
-/* ---------- generic list binding (experience/education/projects/certs/languages/custom) ---------- */
-const LIST_CONFIG = {
-  experience:{ factory:newExperience, container:'list-experience' },
-  education:{ factory:newEducation, container:'list-education' },
-  projects:{ factory:newProject, container:'list-projects' },
-  certifications:{ factory:newCert, container:'list-certifications' },
-  languages:{ factory:newLanguage, container:'list-languages' },
-  custom:{ factory:newCustom, container:'list-custom' }
-};
-
-function fieldHtml(key, entry, def){
-  const val = esc(entry[key] ?? '');
-  const id = `f-${entry.id}-${key}`;
-  if(def.type==='textarea'){
-    return `<div class="field"><label>${esc(def.label)}</label><textarea id="${id}" data-key="${key}" rows="${def.rows||3}" placeholder="${esc(def.placeholder||'')}">${val}</textarea></div>`;
   }
-  if(def.type==='checkbox'){
-    return `<div class="checkline"><input type="checkbox" id="${id}" data-key="${key}" ${entry[key]?'checked':''}><label for="${id}" style="margin:0;">${esc(def.label)}</label></div>`;
-  }
-  if(def.type==='select'){
-    const opts = def.options.map(o=>`<option value="${esc(o)}" ${entry[key]===o?'selected':''}>${esc(o)}</option>`).join('');
-    return `<div class="field"><label>${esc(def.label)}</label><select id="${id}" data-key="${key}">${opts}</select></div>`;
-  }
-  const type = def.type || 'text';
-  return `<div class="field"><label>${esc(def.label)}</label><input type="${type}" id="${id}" data-key="${key}" value="${val}" placeholder="${esc(def.placeholder||'')}"></div>`;
-}
 
-const ENTRY_SCHEMAS = {
-  experience:[
-    {row:[['role',{label:'Role', placeholder:'Senior Product Designer'}], ['company',{label:'Company', placeholder:'Acme Corp'}]]},
-    {row:[['location',{label:'Location', placeholder:'Remote / City'}]]},
-    {row:[['start',{label:'Start', type:'month'}], ['end',{label:'End', type:'month'}]]},
-    {single:['current',{type:'checkbox', label:'I currently work here'}]},
-    {single:['bullets',{type:'textarea', label:'Achievements (one per line)', rows:4, placeholder:'Led redesign of onboarding, cutting drop-off 24%'}]}
-  ],
-  education:[
-    {row:[['school',{label:'School', placeholder:'University of KwaZulu-Natal'}], ['degree',{label:'Degree', placeholder:'BSc Computer Science'}]]},
-    {row:[['field',{label:'Field of study', placeholder:'Software Engineering'}]]},
-    {row:[['start',{label:'Start', type:'month'}], ['end',{label:'End', type:'month'}]]},
-    {single:['details',{type:'textarea', label:'Details (optional)', rows:2, placeholder:'Deans list, relevant coursework, thesis title...'}]}
-  ],
-  projects:[
-    {row:[['name',{label:'Project name', placeholder:'Bean & Brew Café Platform'}], ['link',{label:'Link', type:'url', placeholder:'github.com/you/project'}]]},
-    {single:['tech',{label:'Tech used', placeholder:'Node.js, Express, Supabase'}]},
-    {single:['description',{type:'textarea', label:'Description', rows:3, placeholder:'What it does and the impact / results.'}]}
-  ],
-  certifications:[
-    {row:[['name',{label:'Certification', placeholder:'AWS Certified Developer'}], ['issuer',{label:'Issuer', placeholder:'Amazon Web Services'}]]},
-    {row:[['date',{label:'Date', type:'month'}]]}
-  ],
-  languages:[
-    {row:[['name',{label:'Language', placeholder:'Zulu'}], ['level',{type:'select', label:'Level', options:['Native','Fluent','Professional','Conversational','Basic']}]]}
-  ],
-  custom:[
-    {row:[['title',{label:'Section title', placeholder:'Awards'}]]},
-    {single:['body',{type:'textarea', label:'Content (one line per entry)', rows:3, placeholder:'Employee of the Year, 2025 — Acme Corp'}]}
-  ]
-};
-
-function renderEntryForm(kind, entry){
-  const schema = ENTRY_SCHEMAS[kind];
-  let html = '';
-  schema.forEach(block=>{
-    if(block.row){
-      html += `<div class="row2">` + block.row.map(([k,def])=>fieldHtml(k, entry, def)).join('') + `</div>`;
-    } else if(block.single){
-      const [k,def] = block.single;
-      html += fieldHtml(k, entry, def);
-    }
-  });
-  return html;
-}
-
-function renderList(kind){
-  const cfg = LIST_CONFIG[kind];
-  const container = document.getElementById(cfg.container);
-  const items = state[kind];
-  if(items.length===0){
-    container.innerHTML = `<p class="hint" style="margin-top:-4px;">Nothing added yet.</p>`;
-    return;
-  }
-  container.innerHTML = items.map((entry, idx) => `
-    <div class="entry" draggable="true" data-kind="${kind}" data-id="${entry.id}" data-idx="${idx}">
-      <div class="entry-head">
-        <span class="drag-dots">⠿ ${esc(entryTitle(kind, entry, idx))}</span>
-        <span class="entry-actions">
-          <button class="icon-btn" data-move="up" title="Move up">↑</button>
-          <button class="icon-btn" data-move="down" title="Move down">↓</button>
-          <button class="icon-btn danger" data-remove title="Remove">✕</button>
-        </span>
-      </div>
-      ${renderEntryForm(kind, entry)}
-    </div>
-  `).join('');
-}
-
-function entryTitle(kind, entry, idx){
-  const n = idx+1;
-  if(kind==='experience') return entry.role || entry.company || `Entry ${n}`;
-  if(kind==='education') return entry.school || entry.degree || `Entry ${n}`;
-  if(kind==='projects') return entry.name || `Entry ${n}`;
-  if(kind==='certifications') return entry.name || `Entry ${n}`;
-  if(kind==='languages') return entry.name || `Entry ${n}`;
-  if(kind==='custom') return entry.title || `Section ${n}`;
-  return `Entry ${n}`;
-}
-
-function bindListEvents(kind){
-  const cfg = LIST_CONFIG[kind];
-  const container = document.getElementById(cfg.container);
-
-  container.addEventListener('input', e=>{
-    const entryEl = e.target.closest('.entry');
-    if(!entryEl) return;
-    const id = entryEl.dataset.id;
-    const item = state[kind].find(x=>x.id===id);
-    if(!item) return;
-    const key = e.target.dataset.key;
-    if(!key) return;
-    item[key] = e.target.type==='checkbox' ? e.target.checked : e.target.value;
-    renderPreview();
-    scheduleSave();
-  });
-
-  container.addEventListener('click', e=>{
-    const entryEl = e.target.closest('.entry');
-    if(!entryEl) return;
-    const id = entryEl.dataset.id;
-    const idx = state[kind].findIndex(x=>x.id===id);
-    if(idx===-1) return;
-    if(e.target.closest('[data-remove]')){
-      state[kind].splice(idx,1);
-      renderList(kind); renderPreview(); scheduleSave();
-    } else if(e.target.closest('[data-move="up"]') && idx>0){
-      [state[kind][idx-1], state[kind][idx]] = [state[kind][idx], state[kind][idx-1]];
-      renderList(kind); renderPreview(); scheduleSave();
-    } else if(e.target.closest('[data-move="down"]') && idx<state[kind].length-1){
-      [state[kind][idx+1], state[kind][idx]] = [state[kind][idx], state[kind][idx+1]];
-      renderList(kind); renderPreview(); scheduleSave();
-    }
-  });
-
-  let dragSrcIdx = null;
-  container.addEventListener('dragstart', e=>{
-    const entryEl = e.target.closest('.entry');
-    if(!entryEl) return;
-    dragSrcIdx = Number(entryEl.dataset.idx);
-    entryEl.classList.add('dragging');
-  });
-  container.addEventListener('dragend', e=>{
-    const entryEl = e.target.closest('.entry');
-    if(entryEl) entryEl.classList.remove('dragging');
-  });
-  container.addEventListener('dragover', e=>{
-    e.preventDefault();
-    const entryEl = e.target.closest('.entry');
-    if(!entryEl) return;
-    const targetIdx = Number(entryEl.dataset.idx);
-    if(targetIdx===dragSrcIdx || dragSrcIdx===null) return;
-    const [moved] = state[kind].splice(dragSrcIdx,1);
-    state[kind].splice(targetIdx,0,moved);
-    dragSrcIdx = targetIdx;
-    renderList(kind);
-    renderPreview();
-    scheduleSave();
-  });
-}
-
-document.addEventListener('click', e=>{
-  const addBtn = e.target.closest('[data-add]');
-  if(!addBtn) return;
-  const kind = addBtn.dataset.add;
-  state[kind].push(LIST_CONFIG[kind].factory());
-  renderList(kind);
-  renderPreview();
-  scheduleSave();
-});
-
-/* ---------- personal + summary bindings ---------- */
-const PERSONAL_FIELDS = ['name','title','email','phone','location','website','linkedin','github'];
-function bindPersonal(){
-  PERSONAL_FIELDS.forEach(key=>{
-    const el = document.getElementById('p-'+key);
-    el.addEventListener('input', ()=>{
-      state.personal[key] = el.value;
-      renderPreview();
-      scheduleSave();
-    });
-  });
-  const summaryEl = document.getElementById('p-summary');
-  summaryEl.addEventListener('input', ()=>{
-    state.summary = summaryEl.value;
-    renderPreview();
-    scheduleSave();
-  });
-}
-function fillPersonalInputs(){
-  PERSONAL_FIELDS.forEach(key=>{
-    document.getElementById('p-'+key).value = state.personal[key] || '';
-  });
-  document.getElementById('p-summary').value = state.summary || '';
-}
-
-/* ---------- skills ---------- */
-function renderSkillTags(){
-  const wrap = document.getElementById('skill-tags');
-  wrap.innerHTML = state.skills.map((s,i)=>`
-    <span class="tag">${esc(s)}<button data-skill-remove="${i}" title="Remove">✕</button></span>
-  `).join('');
-}
-function bindSkills(){
-  const input = document.getElementById('skill-input');
-  input.addEventListener('keydown', e=>{
-    if(e.key==='Enter' && input.value.trim()){
+  skillInput.addEventListener("keydown",(e)=>{
+    if(e.key === "Enter" && skillInput.value.trim()){
       e.preventDefault();
-      state.skills.push(input.value.trim());
-      input.value='';
-      renderSkillTags(); renderPreview(); scheduleSave();
+      state.skills.push(skillInput.value.trim());
+      skillInput.value = "";
+      renderSkillTags();
+      render();
     }
   });
-  document.getElementById('skill-tags').addEventListener('click', e=>{
-    const btn = e.target.closest('[data-skill-remove]');
+
+  skillsWrap.addEventListener("click",(e)=>{
+    const btn = e.target.closest("button[data-idx]");
     if(!btn) return;
-    state.skills.splice(Number(btn.dataset.skillRemove),1);
-    renderSkillTags(); renderPreview(); scheduleSave();
+    state.skills.splice(Number(btn.dataset.idx),1);
+    renderSkillTags();
+    render();
   });
-}
 
-/* ---------- template / style controls ---------- */
-function bindStyleControls(){
-  $$('.swatch-tpl').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      state.meta.template = btn.dataset.tpl;
-      applyStyleState();
-      scheduleSave();
+  // ---------- Template + accent ----------
+  document.getElementById("templateSelect").addEventListener("change",(e)=>{
+    state.template = e.target.value;
+    render();
+  });
+
+  document.querySelectorAll(".swatch").forEach(sw=>{
+    sw.addEventListener("click",()=>{
+      document.querySelectorAll(".swatch").forEach(s=>s.classList.remove("active"));
+      sw.classList.add("active");
+      state.accent = sw.dataset.color;
+      render();
     });
   });
-  const colorInput = document.getElementById('accent-color');
-  colorInput.addEventListener('input', ()=>{
-    state.meta.accent = colorInput.value;
-    document.getElementById('accent-hex').textContent = colorInput.value;
-    applyStyleState();
-    scheduleSave();
-  });
-  $$('[data-density]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      state.meta.density = btn.dataset.density;
-      applyStyleState();
-      scheduleSave();
-    });
-  });
-}
-function applyStyleState(){
-  const paper = document.getElementById('paper');
-  paper.className = `paper tpl-${state.meta.template} density-${state.meta.density}`;
-  paper.style.setProperty('--resume-accent', state.meta.accent);
-  $$('.swatch-tpl').forEach(b => b.classList.toggle('active', b.dataset.tpl===state.meta.template));
-  $$('[data-density]').forEach(b => b.classList.toggle('btn-ghost', true));
-  $$('[data-density]').forEach(b => {
-    if(b.dataset.density===state.meta.density){ b.style.borderColor='var(--accent-bright)'; b.style.color='var(--accent-bright)'; }
-    else { b.style.borderColor=''; b.style.color=''; }
-  });
-  document.getElementById('accent-color').value = state.meta.accent;
-  document.getElementById('accent-hex').textContent = state.meta.accent;
-}
 
-/* ---------- preview rendering ---------- */
-function formatDate(v){
-  if(!v) return '';
-  const [y,m] = v.split('-');
-  if(!m) return v;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[Number(m)-1]} ${y}`;
-}
+  // ---------- Zoom ----------
+  let zoom = 0.8;
+  const paperOuter = document.getElementById("paperOuter");
+  function applyZoom(){
+    paperOuter.style.transform = `scale(${zoom})`;
+    paperOuter.style.marginBottom = `${(zoom-1)*1123}px`;
+    document.getElementById("zoomLabel").textContent = Math.round(zoom*100)+"%";
+  }
+  document.getElementById("zoomIn").addEventListener("click",()=>{ zoom = Math.min(1.2, zoom+0.1); applyZoom(); });
+  document.getElementById("zoomOut").addEventListener("click",()=>{ zoom = Math.max(0.4, zoom-0.1); applyZoom(); });
+  applyZoom();
 
-function renderPreview(){
-  const p = state.personal;
-  const contactParts = [p.location, p.email, p.phone, p.website, p.linkedin, p.github].filter(Boolean);
-
-  let html = '';
-  html += `<div class="r-header">`;
-  html += `<h1 class="r-name">${esc(p.name) || 'Your Name'}</h1>`;
-  if(p.title) html += `<p class="r-title">${esc(p.title)}</p>`;
-  if(contactParts.length) html += `<div class="r-contact">${contactParts.map(c=>`<span>${esc(c)}</span>`).join('')}</div>`;
-  html += `</div>`;
-
-  if(state.summary.trim()){
-    html += `<div class="r-section"><h2 class="r-heading">Summary</h2><p class="r-summary">${esc(state.summary)}</p></div>`;
+  // ---------- Helpers ----------
+  function esc(str){
+    return (str||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   }
 
-  if(state.experience.length){
-    html += `<div class="r-section"><h2 class="r-heading">Experience</h2>`;
-    state.experience.forEach(ex=>{
-      const dateStr = `${formatDate(ex.start)}${ex.start||ex.end?' – ':''}${ex.current?'Present':formatDate(ex.end)}`;
-      const bullets = (ex.bullets||'').split('\n').map(b=>b.trim()).filter(Boolean);
-      html += `<div class="r-item">
-        <div class="r-item-top">
+  function contactLine(){
+    const p = state.personal;
+    return [p.location, p.phone, p.email, p.website].filter(Boolean);
+  }
+
+  // ---------- Render resume ----------
+  function render(){
+    const paper = document.getElementById("resumePaper");
+    paper.className = "paper tmpl-" + state.template;
+    paper.style.setProperty("--tmpl-accent", state.accent);
+    paper.style.setProperty("--tmpl-accent-soft", hexToSoft(state.accent));
+
+    if(state.template === "classic") paper.innerHTML = renderClassic();
+    else paper.innerHTML = renderModern();
+
+    updateCompleteness();
+  }
+
+  function hexToSoft(hex){
+    // light tint of accent for pill backgrounds
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},0.1)`;
+  }
+
+  function renderExperienceItems(){
+    if(!state.experience.length) return `<p class="empty-msg">No experience added yet.</p>`;
+    return state.experience.map(x=>`
+      <div class="r-item">
+        <div class="r-item-head">
           <div>
-            <p class="r-item-role">${esc(ex.role)||'Role'}</p>
-            <p class="r-item-org">${[esc(ex.company), esc(ex.location)].filter(Boolean).join(' · ')}</p>
+            <div class="r-item-title">${esc(x.role)||"Job title"}</div>
+            <div class="r-item-org">${esc(x.company)||"Company"}</div>
           </div>
-          <span class="r-item-date">${esc(dateStr)}</span>
+          <div class="r-item-date">${esc(x.start)}${x.start||x.end ? " – " : ""}${esc(x.end)}</div>
         </div>
-        ${bullets.length ? `<ul class="r-bullets">${bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>` : ''}
-      </div>`;
-    });
-    html += `</div>`;
+        ${x.description ? `<div class="r-item-desc">${esc(x.description)}</div>` : ""}
+      </div>
+    `).join("");
   }
 
-  if(state.education.length){
-    html += `<div class="r-section"><h2 class="r-heading">Education</h2>`;
-    state.education.forEach(ed=>{
-      const dateStr = `${formatDate(ed.start)}${ed.start||ed.end?' – ':''}${formatDate(ed.end)}`;
-      html += `<div class="r-item">
-        <div class="r-item-top">
+  function renderEducationItems(){
+    if(!state.education.length) return `<p class="empty-msg">No education added yet.</p>`;
+    return state.education.map(x=>`
+      <div class="r-item">
+        <div class="r-item-head">
           <div>
-            <p class="r-item-role">${esc(ed.degree)||'Degree'}${ed.field?` — ${esc(ed.field)}`:''}</p>
-            <p class="r-item-org">${esc(ed.school)}</p>
+            <div class="r-item-title">${esc(x.degree)||"Degree"}</div>
+            <div class="r-item-org">${esc(x.school)||"School"}</div>
           </div>
-          <span class="r-item-date">${esc(dateStr)}</span>
+          <div class="r-item-date">${esc(x.start)}${x.start||x.end ? " – " : ""}${esc(x.end)}</div>
         </div>
-        ${ed.details ? `<p class="r-bullets" style="padding-left:0;list-style:none;">${esc(ed.details)}</p>` : ''}
-      </div>`;
-    });
-    html += `</div>`;
+        ${x.description ? `<div class="r-item-desc">${esc(x.description)}</div>` : ""}
+      </div>
+    `).join("");
   }
 
-  if(state.skills.length){
-    html += `<div class="r-section"><h2 class="r-heading">Skills</h2><div class="r-skillrow">${state.skills.map(s=>`<span class="r-skill">${esc(s)}</span>`).join('')}</div></div>`;
-  }
+  function renderClassic(){
+    const p = state.personal;
+    return `
+      <h1 class="r-name">${esc(p.name)||"Your Name"}</h1>
+      ${p.title ? `<div class="r-title">${esc(p.title)}</div>` : ""}
+      <div class="r-contacts">${contactLine().map(esc).join(" &nbsp;·&nbsp; ") || "location · phone · email"}</div>
 
-  if(state.projects.length){
-    html += `<div class="r-section"><h2 class="r-heading">Projects</h2>`;
-    state.projects.forEach(pr=>{
-      html += `<div class="r-item">
-        <div class="r-item-top">
-          <p class="r-item-role">${esc(pr.name)||'Project'}</p>
-          ${pr.link ? `<span class="r-item-date">${esc(pr.link)}</span>` : ''}
+      ${state.summary ? `<div class="r-section"><div class="r-h2">Summary</div><p class="r-summary">${esc(state.summary)}</p></div>` : ""}
+
+      <div class="r-section">
+        <div class="r-h2">Experience</div>
+        ${renderExperienceItems()}
+      </div>
+
+      <div class="r-two-col">
+        <div class="r-section">
+          <div class="r-h2">Education</div>
+          ${renderEducationItems()}
         </div>
-        ${pr.tech ? `<p class="r-item-org">${esc(pr.tech)}</p>` : ''}
-        ${pr.description ? `<p class="r-bullets" style="padding-left:0;list-style:none;">${esc(pr.description)}</p>` : ''}
-      </div>`;
-    });
-    html += `</div>`;
-  }
-
-  if(state.certifications.length){
-    html += `<div class="r-section"><h2 class="r-heading">Certifications</h2>`;
-    state.certifications.forEach(c=>{
-      html += `<div class="r-item">
-        <div class="r-item-top">
-          <p class="r-item-role">${esc(c.name)||'Certification'}${c.issuer?` — ${esc(c.issuer)}`:''}</p>
-          <span class="r-item-date">${esc(formatDate(c.date))}</span>
+        <div>
+          ${state.skills.length ? `
+          <div class="r-section">
+            <div class="r-h2">Skills</div>
+            <div class="r-skills">${state.skills.map(s=>`<span class="r-skill-pill">${esc(s)}</span>`).join("")}</div>
+          </div>` : ""}
+          ${state.languages.length ? `
+          <div class="r-section">
+            <div class="r-h2">Languages</div>
+            ${state.languages.map(l=>`<div class="r-item-desc" style="margin:0 0 4px;"><strong>${esc(l.name)}</strong> — ${esc(l.level)}</div>`).join("")}
+          </div>` : ""}
         </div>
-      </div>`;
-    });
-    html += `</div>`;
+      </div>
+    `;
   }
 
-  if(state.languages.length){
-    html += `<div class="r-section"><h2 class="r-heading">Languages</h2><div class="r-skillrow">${state.languages.map(l=>`<span class="r-skill">${esc(l.name)}${l.level?` — ${esc(l.level)}`:''}</span>`).join('')}</div></div>`;
+  function renderModern(){
+    const p = state.personal;
+    return `
+      <div class="r-side">
+        <div class="r-name">${esc(p.name)||"Your Name"}</div>
+        ${p.title ? `<div class="r-title">${esc(p.title)}</div>` : ""}
+
+        <div class="r-h2">Contact</div>
+        ${contactLine().length ? contactLine().map(c=>`<div class="r-contact-line">${esc(c)}</div>`).join("") : `<div class="r-contact-line" style="opacity:.6">Add your contact details</div>`}
+
+        ${state.skills.length ? `
+        <div class="r-h2">Skills</div>
+        <div>${state.skills.map(s=>`<span class="r-skill-pill">${esc(s)}</span>`).join("")}</div>` : ""}
+
+        ${state.languages.length ? `
+        <div class="r-h2">Languages</div>
+        ${state.languages.map(l=>`<div class="r-lang-line"><span>${esc(l.name)}</span><span>${esc(l.level)}</span></div>`).join("")}` : ""}
+      </div>
+      <div class="r-main">
+        ${state.summary ? `<div class="r-section"><div class="r-h2">Summary</div><p class="r-summary">${esc(state.summary)}</p></div>` : ""}
+        <div class="r-section">
+          <div class="r-h2">Experience</div>
+          ${renderExperienceItems()}
+        </div>
+        <div class="r-section">
+          <div class="r-h2">Education</div>
+          ${renderEducationItems()}
+        </div>
+      </div>
+    `;
   }
 
-  state.custom.forEach(sec=>{
-    if(!sec.title && !sec.body) return;
-    const lines = (sec.body||'').split('\n').map(b=>b.trim()).filter(Boolean);
-    html += `<div class="r-section"><h2 class="r-heading">${esc(sec.title)||'Section'}</h2>${lines.length?`<ul class="r-bullets">${lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`:''}</div>`;
-  });
+  // ---------- Completeness ----------
+  function updateCompleteness(){
+    let score = 0, total = 6;
+    if(state.personal.name && state.personal.email) score++;
+    if(state.personal.title) score++;
+    if(state.summary) score++;
+    if(state.experience.length) score++;
+    if(state.education.length) score++;
+    if(state.skills.length) score++;
+    const pct = Math.round((score/total)*100);
+    const circumference = 2 * Math.PI * 13;
+    document.getElementById("ringFg").style.strokeDasharray = circumference;
+    document.getElementById("ringFg").style.strokeDashoffset = circumference - (pct/100)*circumference;
+    document.getElementById("completenessLabel").textContent = pct + "% complete";
+  }
 
-  document.getElementById('paper').innerHTML = html;
-  updateATS();
-}
-
-/* ---------- ATS score ---------- */
-const ACTION_VERBS = /^(led|build|built|manage[d]?|create[d]?|improve[d]?|increase[d]?|develop(ed)?|design(ed)?|launch(ed)?|reduce[d]?|automate[d]?|implement(ed)?|deliver(ed)?|drove|drive|optimi[sz]ed?|ship(ped)?|scale[d]?|migrate[d]?|own(ed)?|mentor(ed)?|coordinate[d]?|analy[sz]e[d]?|streamline[d]?)/i;
-
-function wordCount(){
-  const parts = [
-    state.summary,
-    ...state.experience.map(e=>e.bullets),
-    ...state.education.map(e=>e.details),
-    ...state.projects.map(p=>p.description)
-  ].join(' ');
-  return parts.trim().split(/\s+/).filter(Boolean).length;
-}
-
-function computeATS(){
-  const checks = [
-    {ok: !!state.personal.name.trim(), pts:8, tip:'Add your full name.'},
-    {ok: !!state.personal.email.trim(), pts:8, tip:'Add an email address.'},
-    {ok: !!state.personal.phone.trim(), pts:6, tip:'Add a phone number.'},
-    {ok: !!state.personal.title.trim(), pts:6, tip:'Add a target job title or headline.'},
-    {ok: state.summary.trim().length>=80, pts:12, tip:'Write a summary of at least 80 characters.'},
-    {ok: state.experience.length>=1, pts:14, tip:'Add at least one work experience entry.'},
-    {ok: state.experience.some(e=>(e.bullets||'').split('\n').some(b=>ACTION_VERBS.test(b.trim()))), pts:14, tip:'Start bullet points with strong action verbs (Led, Built, Improved...).'},
-    {ok: state.experience.some(e=>/\d/.test(e.bullets||'')), pts:10, tip:'Quantify at least one bullet with a number or metric.'},
-    {ok: state.education.length>=1, pts:8, tip:'Add at least one education entry.'},
-    {ok: state.skills.length>=5, pts:10, tip:'List at least 5 relevant skills.'},
-    {ok: wordCount()>=150, pts:4, tip:'Add a bit more detail — aim for 150+ words total.'}
-  ];
-  let score=0, max=0, tips=[];
-  checks.forEach(c=>{ max+=c.pts; if(c.ok) score+=c.pts; else tips.push(c.tip); });
-  return { pct: Math.round(score/max*100), tips };
-}
-
-function updateATS(){
-  const { pct, tips } = computeATS();
-  const ring = document.getElementById('ats-ring');
-  const circumference = 2*Math.PI*31;
-  const offset = circumference - (pct/100)*circumference;
-  ring.style.strokeDasharray = circumference;
-  ring.style.strokeDashoffset = offset;
-  ring.style.stroke = pct>=75 ? 'var(--accent-bright)' : pct>=45 ? 'var(--gold)' : 'var(--danger)';
-  document.getElementById('ats-pct').textContent = pct+'%';
-  const tipsEl = document.getElementById('ats-tips');
-  tipsEl.innerHTML = tips.length ? tips.map(t=>`<li>${esc(t)}</li>`).join('') : `<li style="list-style:none;padding-left:0;">Looking solid — nice work.</li>`;
-}
-
-/* ---------- export / import / sample / clear / pdf ---------- */
-function bindActions(){
-  document.getElementById('btn-pdf').addEventListener('click', ()=> window.print());
-
-  document.getElementById('btn-export').addEventListener('click', ()=>{
-    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const filename = (state.personal.name.trim() || 'resume').toLowerCase().replace(/[^a-z0-9]+/g,'-');
-    a.href = url; a.download = `${filename}-resume.json`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-  document.getElementById('btn-import').addEventListener('click', ()=> document.getElementById('file-import').click());
-  document.getElementById('file-import').addEventListener('change', e=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = evt=>{
-      try{
-        const parsed = JSON.parse(evt.target.result);
-        state = Object.assign(blankState(), parsed);
-        fullRender();
-        scheduleSave();
-      }catch(err){
-        alert('That file could not be read as a valid resume JSON export.');
-      }
+  // ---------- Download PDF ----------
+  document.getElementById("downloadBtn").addEventListener("click", ()=>{
+    const paper = document.getElementById("resumePaper");
+    const filename = (state.personal.name ? state.personal.name.replace(/\s+/g,"_") : "resume") + "_resume.pdf";
+    const opt = {
+      margin: 0,
+      filename: filename,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2.5, useCORS: true, backgroundColor: "#ffffff" },
+      jsPDF: { unit: "px", format: [794, 1123], orientation: "portrait" },
+      pagebreak: { mode: ["css", "legacy"] }
     };
-    reader.readAsText(file);
-    e.target.value = '';
+    const btn = document.getElementById("downloadBtn");
+    const original = btn.innerHTML;
+    btn.innerHTML = "Generating…";
+    btn.disabled = true;
+    html2pdf().set(opt).from(paper).save().then(()=>{
+      btn.innerHTML = original;
+      btn.disabled = false;
+    }).catch(()=>{
+      btn.innerHTML = original;
+      btn.disabled = false;
+    });
   });
 
-  document.getElementById('btn-sample').addEventListener('click', ()=>{
-    if(!confirm('Load sample content? This will replace your current data.')) return;
-    state = sampleState();
-    fullRender();
-    scheduleSave();
+  // ---------- Sample data ----------
+  document.getElementById("sampleBtn").addEventListener("click", ()=>{
+    state.personal = {
+      name:"Rahul Naidoo",
+      title:"Telecoms Systems Specialist",
+      email:"rahul.naidoo@email.com",
+      phone:"+27 71 234 5678",
+      location:"Durban North, South Africa",
+      website:"linkedin.com/in/rahulnaidoo"
+    };
+    document.getElementById("p_name").value = state.personal.name;
+    document.getElementById("p_title").value = state.personal.title;
+    document.getElementById("p_email").value = state.personal.email;
+    document.getElementById("p_phone").value = state.personal.phone;
+    document.getElementById("p_location").value = state.personal.location;
+    document.getElementById("p_website").value = state.personal.website;
+
+    state.summary = "Telecoms specialist with 5+ years configuring push-to-cellular platforms and guarding-site deployments for enterprise clients across South Africa. Skilled at translating live operational needs into reliable shift schedules and system configurations under pressure.";
+    document.getElementById("p_summary").value = state.summary;
+
+    state.experience = [];
+    addExperience({role:"Field Systems Coordinator", company:"Radiosource Telecoms", start:"Mar 2022", end:"Present", description:"Configure and maintain guarding-site setups on the iTALKPTT Push-to-Cellular platform for enterprise clients.\nBuild and manage shift schedules across multiple client sites, resolving conflicts before they affect live operations.\nHandle live client calls during incidents, providing real-time platform support."});
+    addExperience({role:"Technical Support Agent", company:"Vodacom Business", start:"Jan 2019", end:"Feb 2022", description:"Provided tier-2 support for enterprise mobile and connectivity clients.\nDiagnosed and escalated network configuration issues across a regional client base."});
+
+    state.education = [];
+    addEducation({degree:"National Diploma in Information Technology", school:"Durban University of Technology", start:"2015", end:"2018", description:""});
+
+    state.skills = ["iTALKPTT Platform","Shift Scheduling","Client Support","Node.js","Supabase","Troubleshooting"];
+    renderSkillTags();
+
+    state.languages = [];
+    addLanguage({name:"English", level:"Fluent"});
+    addLanguage({name:"Zulu", level:"Conversational"});
+
+    render();
   });
 
-  document.getElementById('btn-clear').addEventListener('click', ()=>{
-    if(!confirm('Clear everything and start from a blank resume?')) return;
-    state = blankState();
-    fullRender();
-    scheduleSave();
-  });
-}
-
-function sampleState(){
-  const s = blankState();
-  s.personal = { name:'Alex Morgan', title:'Full-Stack Developer', email:'alex.morgan@email.com', phone:'+27 71 555 0134', location:'Durban, South Africa', website:'alexmorgan.dev', linkedin:'linkedin.com/in/alexmorgan', github:'github.com/alexmorgan' };
-  s.summary = 'Full-stack developer with 5 years of experience shipping customer-facing web apps end to end, from database design to polished UI. Comfortable owning a feature from spec to production.';
-  s.experience = [
-    { id:uid(), role:'Software Developer', company:'Radiant Systems', location:'Durban, South Africa', start:'2022-03', end:'', current:true,
-      bullets:'Led rebuild of the customer portal in Node.js and React, cutting page load time by 38%\nDesigned and shipped a booking flow with email notifications used by 2,000+ customers monthly\nMentored two junior developers through code review and pairing sessions' },
-    { id:uid(), role:'Junior Developer', company:'Coastline Digital', location:'Durban, South Africa', start:'2020-01', end:'2022-02', current:false,
-      bullets:'Built and maintained REST APIs for an internal inventory system\nAutomated a manual reporting process, saving the team roughly 6 hours a week' }
-  ];
-  s.education = [
-    { id:uid(), school:'University of KwaZulu-Natal', degree:'BSc Computer Science', field:'Software Engineering', start:'2016-01', end:'2019-12', details:'' }
-  ];
-  s.skills = ['JavaScript','Node.js','React','PostgreSQL','Supabase','REST APIs','Git','Docker'];
-  s.projects = [
-    { id:uid(), name:'Café Booking Platform', description:'A table-booking and ordering platform with an AI chat assistant and automated email confirmations.', tech:'Node.js, Express, Supabase, Gemini API', link:'github.com/alexmorgan/cafe-platform' }
-  ];
-  s.certifications = [ { id:uid(), name:'AWS Certified Developer – Associate', issuer:'Amazon Web Services', date:'2023-06' } ];
-  s.languages = [ { id:uid(), name:'English', level:'Native' }, { id:uid(), name:'Zulu', level:'Fluent' } ];
-  s.custom = [ { id:uid(), title:'Awards', body:'Employee of the Quarter, Radiant Systems — Q3 2024' } ];
-  return s;
-}
-
-/* ---------- full render ---------- */
-function fullRender(){
-  fillPersonalInputs();
-  Object.keys(LIST_CONFIG).forEach(renderList);
-  renderSkillTags();
-  applyStyleState();
-  renderPreview();
-}
-
-/* ---------- init ---------- */
-function init(){
-  loadFromStorage();
-  buildRail();
-  watchRailHighlight();
-  bindPersonal();
-  bindSkills();
-  Object.keys(LIST_CONFIG).forEach(bindListEvents);
-  bindStyleControls();
-  bindActions();
-  fullRender();
-}
-init();
-
+  // ---------- Init ----------
+  render();
 })();
 </script>
 </body>
