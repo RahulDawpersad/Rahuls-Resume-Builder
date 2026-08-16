@@ -536,7 +536,7 @@
 
         .cv-section {
             margin-bottom: 22px;
-            page-break-inside: avoid;
+            /* page-break-inside: avoid; */
         }
 
         .cv-section-title {
@@ -584,6 +584,7 @@
         .cv-item {
             margin-bottom: 14px;
             page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .cv-item-head {
@@ -1260,11 +1261,11 @@
 
             const opt = {
                 margin: 0,
-                filename: `${name}_Resume.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    filename: `${name}_Resume.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    pagebreak: { mode: ['css', 'legacy'] },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save().then(() => {
                 btn.innerHTML = oldText;
